@@ -1,0 +1,8 @@
+﻿
+cmake_minimum_required (VERSION 3.8)
+
+project(VoidPlayerCore)
+
+add_executable (VoidPlayerCore WIN32 "Void Player.cpp" "Void Player.h")
+
+target_link_libraries(VoidPlayerCore PRIVATE ApplicationGUI)
