@@ -5,4 +5,8 @@ project(VoidPlayerCore)
 
 add_executable (VoidPlayerCore WIN32 "Void Player.cpp" "Void Player.h")
 
-target_link_libraries(VoidPlayerCore PRIVATE ApplicationGUI)
+#target_link_directories(VoidPlayerCore PRIVATE ApplicationGUI)
+
+include_directories("../ApplicationGUI/")
+
+target_link_libraries(VoidPlayerCore ApplicationGUI)
