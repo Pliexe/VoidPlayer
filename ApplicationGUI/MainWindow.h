@@ -1,6 +1,3 @@
-#pragma once
-
-#include <Windows.h>
 /* Copyright (C) 2021 Sabadi László-Zsolt - All Rights Reserved
  * You may use, distribute and modify this code under the
  * terms of the GNU AGPL v3.0 license.
@@ -9,41 +6,38 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
+#pragma once
+
+#include <Windows.h>
+#include <WinUser.h>
 #include <tchar.h>
+#include <GdiPlus.h>
+#include <windowsx.h>
+#include "BaseWindow.h"
+#pragma comment(lib,"gdiplus.lib")
 
-const int test = 66;
+#define PLAY_BUTTON 1
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+#define PANEL_MUSIC_CONTROL 420
+
+typedef void (*VoidFunc)();
+
 
 namespace ApplicationGUI
 {
-	class MainWindow
+
+	class MainWindow : public BaseWindow<MainWindow>
 	{
-
 	private:
+		void AddControls();
 
-		HWND hWnd;			 // Window Handle
-		HINSTANCE hInstance; // prg instance
-		LPCTSTR CLASS_NAME = TEXT("Void Player Window Class");
+		HWND playButton;
 
-		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+		HWND musicControlPanel;
 
 	public:
-
-#pragma region Singleton Class
-
-		// Get instance
-
-		static MainWindow& getInstance(HINSTANCE hInstance);
-
-		MainWindow() { }
-
-		MainWindow(MainWindow const&) = delete;
-		void operator=(MainWindow const&) = delete;
-
-#pragma endregion
-
-		int Init(); // Initialize Window
-
+		PCWSTR ClassName() const { return L"Void Player Main Window Class"; }
+		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 	};
 }

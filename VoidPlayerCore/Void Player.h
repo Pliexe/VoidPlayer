@@ -10,4 +10,6 @@
 
 #include <iostream>
 #include <Windows.h>
+#include <gdiplus.h>
+
 #include "MainWindow.h"
