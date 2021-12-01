@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.8)
 
 project(ApplicationGUI VERSION 1.0.0)
 
-add_library(ApplicationGUI SHARED "MainWindow.cpp" "MainWindow.h"  "BaseWindow.h")
+add_library(ApplicationGUI SHARED "MainWindow.cpp" "MainWindow.h"  "BaseWindow.h" "ButtonControls.h" "Controls.h" "Panels/MusicControl.h")
 
 target_link_directories(ApplicationGUI PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 

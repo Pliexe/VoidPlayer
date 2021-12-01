@@ -14,15 +14,13 @@
 #include <GdiPlus.h>
 #include <windowsx.h>
 #include "BaseWindow.h"
+#include "ButtonControls.h"
+#include "Panels/MusicControl.h"
 #pragma comment(lib,"gdiplus.lib")
 
-#define PLAY_BUTTON 1
-
-
-#define PANEL_MUSIC_CONTROL 420
+#define PANEL_MUSIC_CONTROL 1
 
 typedef void (*VoidFunc)();
-
 
 namespace ApplicationGUI
 {
@@ -32,9 +30,9 @@ namespace ApplicationGUI
 	private:
 		void AddControls();
 
-		HWND playButton;
+		
 
-		HWND musicControlPanel;
+		MusicControlPanel musicControlPanel;
 
 	public:
 		PCWSTR ClassName() const { return L"Void Player Main Window Class"; }
