@@ -15,7 +15,7 @@ void MainWindow::AddControls()
 {
 	RECT rect;
 
-	if (GetWindowRect(hWnd, &rect))
+	if (GetClientRect(hWnd, &rect))
 	{
 		int width = rect.right - rect.left;
 		int height = rect.bottom - rect.top;
@@ -26,7 +26,7 @@ void MainWindow::AddControls()
 			hWnd,
 			0, height - 150,
 			width, 150,
-			Color(255, 0, 0)
+			Color(33, 26, 54)
 		);
 	}
 	else {
@@ -42,7 +42,10 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
-
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		
+		SetWindowPos(musicControlPanel.hWnd, NULL, 0, rect.bottom - rect.top - 150, rect.right - rect.left, 150, SWP_NOZORDER);
 
 		return TRUE;
 	}
@@ -78,7 +81,9 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 
 		// Paint
 
-		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+		HBRUSH brush = CreateSolidBrush(RGB(6, 32, 74));
+
+		FillRect(hdc, &ps.rcPaint, brush);
 		EndPaint(hWnd, &ps);
 
 		return 0;

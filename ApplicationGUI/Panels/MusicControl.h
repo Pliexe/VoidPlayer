@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Controls.h"
+#include <CommCtrl.h>
 
 #define PLAY_BUTTON 1
 #define PREV_BUTTON 2
@@ -59,6 +60,30 @@ namespace ApplicationGUI
 				(HMENU)PLAY_BUTTON,
 				Color(255, 0, 0, 255), Color(255, 0, 100, 100)
 			);
+
+			HWND hwndTrack =CreateWindow(
+				TRACKBAR_CLASS,
+				TEXT("Trackbar Control"),
+				WS_CHILD | WS_VISIBLE | TBS_AUTOTICKS | TBS_ENABLESELRANGE,
+				100, 70, m_width - 200, 20,
+				hWnd,
+				0,
+				(HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+				NULL
+			);
+
+			SendMessage(hwndTrack, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 100));
+
+			SendMessage(hwndTrack, TBM_SETPAGESIZE,
+				0, (LPARAM)4);                  // new page size 
+
+			SendMessage(hwndTrack, TBM_SETSEL,
+				(WPARAM)FALSE,                  // redraw flag 
+				(LPARAM)MAKELONG(1, 1000));
+
+			SendMessage(hwndTrack, TBM_SETPOS,
+				(WPARAM)TRUE,                   // redraw flag 
+				(LPARAM)50);
 		}
 
 		PCWSTR ClassName() const { return L"Panel"; }
@@ -68,10 +93,23 @@ namespace ApplicationGUI
 			switch (msg)
 			{
 
+			case WM_SIZE:
+			{
+				RECT rect;
+				GetClientRect(hWnd, &rect);
+
+				SetWindowPos(prevButton.hWnd, NULL, (rect.right - rect.left) / 2 - 100, 10, 50, 50, SWP_NOZORDER);
+				SetWindowPos(playButton.hWnd, NULL, (rect.right - rect.left) / 2, 10, 50, 50, SWP_NOZORDER);
+				SetWindowPos(nextButton.hWnd, NULL, (rect.right - rect.left) / 2 + 100, 10, 50, 50, SWP_NOZORDER);
+
+				return TRUE;
+			}
+
 			case WM_CREATE:
 			{
 				Init();
 
+				return TRUE;
 			}
 
 			case WM_DRAWITEM:
@@ -140,7 +178,9 @@ namespace ApplicationGUI
 
 				// Paint
 
-				FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 12));
+				HBRUSH brush = CreateSolidBrush(RGB(backgroundColor.GetRed(), backgroundColor.GetGreen(), backgroundColor.GetBlue(), backgroundColor.GetAlpha()));
+
+				FillRect(hdc, &ps.rcPaint, brush);
 				EndPaint(hWnd, &ps);
 
 				return TRUE;

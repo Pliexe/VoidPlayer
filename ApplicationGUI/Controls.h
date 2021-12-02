@@ -32,6 +32,10 @@ namespace Controls {
 	};
 
 
+	class Slider : public Control {
+
+	};
+
 
 	template <class DERIVED_PANEL>
 	class Panel : public Control
@@ -71,6 +75,8 @@ namespace Controls {
 		) {
 			m_width = width;
 			m_height = height;
+			backgroundColor = _backgroundColor;
+			m_parent = parent;
 
 			WNDCLASS wc = { 0 };
 
@@ -93,13 +99,20 @@ namespace Controls {
 			);
 		}
 
-		void Init();
+		virtual void Init() = 0;
 
 	protected:
 		int m_width;
 		int m_height;
 
+		HWND m_parent;
+
+		Color backgroundColor;
+
+
 		virtual PCWSTR ClassName() const = 0;
 		virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 	};
+
+
 }
