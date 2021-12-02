@@ -14,6 +14,7 @@
 #define PLAY_BUTTON 1
 #define PREV_BUTTON 2
 #define NEXT_BUTTON 3
+#define SLIDER_PROGRESS 10
 
 using namespace Controls;
 
@@ -27,6 +28,7 @@ namespace ApplicationGUI
 		Controls::CustomDrawnCircleButton playButton;
 		Controls::CustomDrawnCircleButton nextButton;
 		Controls::CustomDrawnCircleButton prevButton;
+		Controls::Slider trackTimeSlider;
 		
 	public:
 		void Init()
@@ -61,29 +63,37 @@ namespace ApplicationGUI
 				Color(255, 0, 0, 255), Color(255, 0, 100, 100)
 			);
 
-			HWND hwndTrack =CreateWindow(
-				TRACKBAR_CLASS,
-				TEXT("Trackbar Control"),
-				WS_CHILD | WS_VISIBLE | TBS_AUTOTICKS | TBS_ENABLESELRANGE,
-				100, 70, m_width - 200, 20,
-				hWnd,
-				0,
-				(HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
-				NULL
-			);
+			trackTimeSlider = Slider();
 
-			SendMessage(hwndTrack, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 100));
+			trackTimeSlider.Create(
+				hWnd, 
+				400, 80, m_width - 800, 12,
+				6,
+				(HMENU)SLIDER_PROGRESS, Color(255, 255, 255), Color(10, 10, 10), Color(0, 0, 0));
 
-			SendMessage(hwndTrack, TBM_SETPAGESIZE,
-				0, (LPARAM)4);                  // new page size 
+			//HWND hwndTrack =CreateWindow(
+			//	TRACKBAR_CLASS,
+			//	TEXT("Trackbar Control"),
+			//	WS_CHILD | WS_VISIBLE | TBS_AUTOTICKS | TBS_ENABLESELRANGE,
+			//	100, 70, m_width - 200, 20,
+			//	hWnd,
+			//	0,
+			//	(HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+			//	NULL
+			//);
 
-			SendMessage(hwndTrack, TBM_SETSEL,
-				(WPARAM)FALSE,                  // redraw flag 
-				(LPARAM)MAKELONG(1, 1000));
+			//SendMessage(hwndTrack, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 100));
 
-			SendMessage(hwndTrack, TBM_SETPOS,
-				(WPARAM)TRUE,                   // redraw flag 
-				(LPARAM)50);
+			//SendMessage(hwndTrack, TBM_SETPAGESIZE,
+			//	0, (LPARAM)4);                  // new page size 
+
+			//SendMessage(hwndTrack, TBM_SETSEL,
+			//	(WPARAM)FALSE,                  // redraw flag 
+			//	(LPARAM)MAKELONG(1, 1000));
+
+			//SendMessage(hwndTrack, TBM_SETPOS,
+			//	(WPARAM)TRUE,                   // redraw flag 
+			//	(LPARAM)50);
 		}
 
 		PCWSTR ClassName() const { return L"Panel"; }
@@ -137,7 +147,6 @@ namespace ApplicationGUI
 						Point vertices1P[] = { {15, 15}, {15, 35}, {25, 25} };
 						Point vertices2P[] = { {25, 15}, {25, 35}, {35, 25} };
 
-
 						graphics.FillPolygon(&iconBrush, vertices1P, 3);
 						graphics.FillPolygon(&iconBrush, vertices2P, 3);
 						graphics.DrawLine(&iconPen, 35, 15, 35, 35);
@@ -154,7 +163,6 @@ namespace ApplicationGUI
 						Point vertices1P[] = { {25, 15}, {25, 35}, {15, 25} };
 						Point vertices2P[] = { {35, 15}, {35, 35}, {25, 25} };
 
-
 						graphics.FillPolygon(&iconBrush, vertices1P, 3);
 						graphics.FillPolygon(&iconBrush, vertices2P, 3);
 						graphics.DrawLine(&iconPen, 15, 15, 15, 35);
@@ -162,13 +170,38 @@ namespace ApplicationGUI
 
 					playButton.DrawControl(lpDrawItem, cbIcon);
 				}
+				else if (lpDrawItem->hwndItem == trackTimeSlider.hWnd)
+				{
+					trackTimeSlider.DrawnControl(lpDrawItem);
+				}
 				
 
 				return TRUE;
 
 			}
 
+			case WM_MOUSEACTIVATE:
+			{
+				switch (wParam)
+				{
+				default:
+					break;
+				}
+			}
 
+			case WM_COMMAND:
+
+				switch (wParam)
+				{
+				case PLAY_BUTTON:
+					MessageBox(hWnd, TEXT("Clicked"), TEXT("EYY"), MB_OK);
+					break;
+				case SLIDER_PROGRESS:
+					trackTimeSlider.SelectSection();
+					break;
+				}
+
+				return TRUE;
 
 			case WM_PAINT:
 
