@@ -10,13 +10,190 @@
 
 #include <gdiplus.h>
 #include <Windows.h>
+#include <tchar.h>
+#include <iostream>
 #include "GraphicsUtils.h"
 
 using namespace Gdiplus;
 
 namespace Controls {
 
+	enum AnchorPoint {
+		ANCHOR_LEFT,
+		ANCHOR_RIGHT,
+		ANCHOR_TOP,
+		ANCHOR_BOTTOM,
+		ANCHOR_MIDDLE
+	};
+
 	class Control
+	{
+	protected:
+
+		int m_height = 0;
+		int m_width = 0;
+
+		float m_hPercent = false;
+		float m_wPercent = false;
+
+		int m_x = 50;
+		int m_y = 50;
+
+		float m_xPercent = false;
+		float m_yPercent = false;
+
+		AnchorPoint m_xAnchor = ANCHOR_LEFT;
+		AnchorPoint m_yAnchor = ANCHOR_TOP;
+
+		bool dynamicResizing = false;
+
+		LPCSTR m_text = NULL;
+
+
+		HMENU m_hmenu = NULL;
+
+		HWND m_parent = NULL;
+
+		void (*cb_onMouseDown)() = NULL;
+		void (*cb_onMouseUp)() = NULL;
+		void (*cb_onMouseActive)() = NULL;
+		void (*cb_onMouseHover)() = NULL;
+
+		void GetNewSize(RECT parentNewSize, RECT& newSize)
+		{
+			if (m_xPercent > 0)
+				m_x = m_xPercent * parentNewSize.left;
+
+			if (m_yPercent > 0)
+				m_y = m_yPercent * parentNewSize.top;
+
+
+			switch (m_xAnchor)
+			{
+			case ANCHOR_LEFT:
+				if (m_wPercent > 0)
+					m_width = m_wPercent * parentNewSize.right;
+
+				newSize.left = m_x;
+				break;
+
+			case ANCHOR_MIDDLE:
+				if (m_wPercent > 0)
+					m_width = m_wPercent * (parentNewSize.right / 2);
+
+				newSize.left = m_x + parentNewSize.right / 2;
+				break;
+
+			case ANCHOR_RIGHT:
+				if (m_wPercent > 0)
+					m_width = m_wPercent * parentNewSize.right;
+
+				newSize.left = parentNewSize.right - m_x;
+				break;
+			}
+
+			switch (m_yAnchor)
+			{
+			case ANCHOR_TOP:
+				if (m_hPercent > 0)
+					m_height = m_hPercent * parentNewSize.bottom;
+
+				newSize.top = m_y;
+				break;
+			case ANCHOR_MIDDLE:
+				if (m_hPercent > 0)
+					m_height = m_hPercent * (parentNewSize.bottom / 2);
+
+				newSize.top = m_y + parentNewSize.bottom / 2;
+				break;
+			case ANCHOR_BOTTOM:
+				if (m_hPercent > 0)
+					m_height = m_hPercent * parentNewSize.bottom;
+
+				newSize.top = parentNewSize.bottom - m_y;
+				break;
+			}
+
+
+			newSize.right = m_width;
+			newSize.bottom = m_height;
+		}
+	public:
+		HWND hWnd = NULL;
+		void SetX(int x) { m_x = x; }
+		void SetY(int y) { m_y = y; }
+
+		void SetWidth(int width) { m_width = width; }
+		void SetHeight(int height) { m_height = height; }
+
+		void SetPos(int x, int y) { m_x = x; m_y = y; }
+		void SetSize(int width, int height) { m_width = width; m_height = height; }
+		void SetPosAndSize(int x, int y, int width, int height) { m_x = x; m_y = y; m_width = width; m_height = height; }
+
+		void SetXpercent(int x) { m_xPercent = x / 100; }
+		void SetYpercent(int y) { m_yPercent = y / 100; }
+
+		void SetWidthPercent(int width) { m_wPercent = width / 100; }
+		void SetHeightPercent(int heigth) { m_hPercent = heigth / 100; }
+
+		void SetHMENU(HMENU hmenu) { m_hmenu = hmenu; }
+
+		void EnableDynamicResizing() { dynamicResizing = true; }
+		void DisableDynamicResizing() { dynamicResizing = false; }
+
+		void SetAnchorX(AnchorPoint ap) { m_xAnchor = ap; }
+		void SetAnchorY(AnchorPoint ap) { m_yAnchor = ap; }
+
+		
+
+		void OnParentResize(RECT parentNewSize)
+		{
+			if (!dynamicResizing) return;
+
+			RECT newSize;
+
+			GetNewSize(parentNewSize, newSize);
+
+			SetWindowPos(hWnd, NULL, newSize.left, newSize.top, newSize.right, newSize.bottom, SWP_NOZORDER);
+			ValidateRect(hWnd, NULL);
+		}
+
+		void HandleDynamicInit(HWND parent, int& x, int& y, int& w, int& h)
+		{
+			RECT parentRect;
+			GetClientRect(parent, &parentRect);
+			RECT newSize;
+
+			GetNewSize(parentRect, newSize);
+
+			x = newSize.left;
+			w = newSize.right;
+
+			y = newSize.top;
+			w = newSize.bottom;
+		}
+	};
+
+	class Button : public Control
+	{
+	protected:
+
+		static std::string ClassName() { return "CustomButton"; };
+	public:
+
+		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			switch (msg)
+			{
+			default:
+				return DefWindowProc(hWnd, msg, wParam, lParam);
+			}
+
+			return TRUE;
+		}
+	};
+
+	class Control1
 	{
 	public:
 
@@ -36,9 +213,6 @@ namespace Controls {
 			return Rect(rect.left, rect.top, rect.right, rect.bottom);
 		}
 	};
-
-
-
 
 	class Slider : public DrawnControl {
 	private:
@@ -61,6 +235,9 @@ namespace Controls {
 			m_backgroundColor = backgroundColor;
 			m_fillerColor = fillerColor;
 			m_handleColor = handleColor;
+
+			if (dynamicResizing)
+				HandleDynamicInit(parent, x, y, width, height);
 
 			hWnd = CreateWindow(
 				TEXT("STATIC"),
@@ -226,12 +403,15 @@ namespace Controls {
 
 			wc.lpfnWndProc = DERIVED_PANEL::WindowProc;
 			wc.hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
-			wc.lpszClassName = _T("Test");
+			wc.lpszClassName = _T("Panel");
 
 			RegisterClass(&wc);
 
+			if (dynamicResizing)
+				HandleDynamicInit(parent, x, y, width, height);
+
 			hWnd = CreateWindow(
-				_T("Test"),
+				_T("Panel"),
 				NULL,
 				WS_VISIBLE | WS_CHILD | SS_OWNERDRAW,
 				x, y,
@@ -246,9 +426,6 @@ namespace Controls {
 		virtual void Init() = 0;
 
 	protected:
-		int m_width;
-		int m_height;
-
 		HWND m_parent;
 
 		Color backgroundColor;

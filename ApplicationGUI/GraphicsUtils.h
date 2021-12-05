@@ -17,42 +17,36 @@ namespace ApplicationGUI
 {
 	namespace Utils {
 
-		void GetRoundRectPath(GraphicsPath* pPath, Rect r, int dia)
-		{
-			if (dia > r.Width) dia = r.Width;
-			if (dia > r.Height) dia = r.Height;
+        void GetRoundRectPath(GraphicsPath* path, Rect rect, int diameter)
+        {
+            Rect corner(rect.X, rect.Y, diameter, diameter);
 
-			// define a corner
-			Rect Corner(r.X, r.Y, dia, dia);
+            path->Reset();
 
-			pPath->Reset();
+            path->AddArc(corner, 180, 90);
 
-			// top left
-			pPath->AddArc(Corner, 180, 90);
+            corner.X += rect.Width - diameter - 1;
+            path->AddArc(corner, 270, 90);
 
-			// tweak needed for radius of 10 (dia of 20)
-			if (dia == 20)
-			{
-				Corner.Width += 1;
-				Corner.Height += 1;
-				r.Width -= 1; r.Height -= 1;
-			}
+            corner.Y += rect.Height - diameter - 1;
+            path->AddArc(corner, 0, 90);
 
-			// top right
-			Corner.X += (r.Width - dia - 1);
-			pPath->AddArc(Corner, 270, 90);
+            corner.X -= rect.Width - diameter - 1;
+            path->AddArc(corner, 90, 90);
 
-			// bottom right
-			Corner.Y += (r.Height - dia - 1);
-			pPath->AddArc(Corner, 0, 90);
+            path->CloseFigure();
+        }
 
-			// bottom left
-			Corner.X -= (r.Width - dia - 1);
-			pPath->AddArc(Corner, 90, 90);
+        void FillRoundRect(Graphics* graphics, Rect rect, Brush* brush, Pen* pen, int radius)
+        {
+            int diameter = 2 * radius;
 
-			// end path
-			pPath->CloseFigure();
-		}
+            GraphicsPath path;
+
+            GetRoundRectPath(&path, rect, diameter);
+
+            graphics->FillPath(brush, &path);
+        }
 
         void DrawRoundRect(Graphics* pGraphics, Rect r, Color color, int radius, int width)
         {

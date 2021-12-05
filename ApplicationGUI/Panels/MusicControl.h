@@ -25,39 +25,45 @@ namespace ApplicationGUI
 	{
 	public:
 
-		Controls::CustomDrawnCircleButton playButton;
-		Controls::CustomDrawnCircleButton nextButton;
-		Controls::CustomDrawnCircleButton prevButton;
-		Controls::Slider trackTimeSlider;
+		CustomDrawnCircleButton playButton;
+		CustomDrawnCircleButton nextButton;
+		CustomDrawnCircleButton prevButton;
+		Slider trackTimeSlider;
 		
 	public:
 		void Init()
 		{
 			playButton = Controls::CustomDrawnCircleButton();
+			playButton.EnableDynamicResizing();
+			playButton.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
 
 			playButton.CreateWithGradient(
 				hWnd,
-				m_width / 2, 10,
+				0, 10,
 				50, 50,
 				(HMENU)PLAY_BUTTON,
 				Color(255, 0, 0, 255), Color(255, 0, 100, 100)
 			);
 
 			prevButton = Controls::CustomDrawnCircleButton();
+			prevButton.EnableDynamicResizing();
+			prevButton.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
 
 			prevButton.CreateWithGradient(
 				hWnd,
-				m_width / 2 - 100, 10,
+				-70, 10,
 				50, 50,
 				(HMENU)PLAY_BUTTON,
 				Color(255, 0, 0, 255), Color(255, 0, 100, 100)
 			);
 
 			nextButton = Controls::CustomDrawnCircleButton();
+			nextButton.EnableDynamicResizing();
+			nextButton.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
 
 			nextButton.CreateWithGradient(
 				hWnd,
-				m_width / 2 + 100, 10,
+				70, 10,
 				50, 50,
 				(HMENU)PLAY_BUTTON,
 				Color(255, 0, 0, 255), Color(255, 0, 100, 100)
@@ -108,9 +114,9 @@ namespace ApplicationGUI
 				RECT rect;
 				GetClientRect(hWnd, &rect);
 
-				SetWindowPos(prevButton.hWnd, NULL, (rect.right - rect.left) / 2 - 100, 10, 50, 50, SWP_NOZORDER);
-				SetWindowPos(playButton.hWnd, NULL, (rect.right - rect.left) / 2, 10, 50, 50, SWP_NOZORDER);
-				SetWindowPos(nextButton.hWnd, NULL, (rect.right - rect.left) / 2 + 100, 10, 50, 50, SWP_NOZORDER);
+				prevButton.OnParentResize(rect);
+				playButton.OnParentResize(rect);
+				nextButton.OnParentResize(rect);
 
 				return TRUE;
 			}

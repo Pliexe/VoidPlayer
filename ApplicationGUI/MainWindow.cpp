@@ -22,12 +22,24 @@ void MainWindow::AddControls()
 
 		musicControlPanel = MusicControlPanel();
 
+		musicControlPanel.EnableDynamicResizing();
+		musicControlPanel.SetAnchorY(Controls::ANCHOR_BOTTOM);
+		musicControlPanel.SetXpercent(50);
+
 		musicControlPanel.Create(
 			hWnd,
-			0, height - 150,
+			0, 150,
 			width, 150,
 			Color(33, 26, 54)
 		);
+
+		Button btn;
+
+		btn.SetPos(10, 10);
+
+		btn.SetPosAndSize(10, 10, 50, 50);
+
+		//btn.Create(hWnd);
 	}
 	else {
 		MessageBox(hWnd, _T("Failed to get window width, height!"), _T("Error!"), MB_ICONERROR);
@@ -45,7 +57,9 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 		RECT rect;
 		GetClientRect(hWnd, &rect);
 		
-		SetWindowPos(musicControlPanel.hWnd, NULL, 0, rect.bottom - rect.top - 150, rect.right - rect.left, 150, SWP_NOZORDER);
+		//SetWindowPos(musicControlPanel.hWnd, NULL, 0, rect.bottom - rect.top - 150, rect.right - rect.left, 150, SWP_NOZORDER);
+
+		musicControlPanel.OnParentResize(rect);
 
 		return TRUE;
 	}

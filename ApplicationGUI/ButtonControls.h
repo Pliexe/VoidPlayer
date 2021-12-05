@@ -21,8 +21,6 @@ namespace Controls {
 	public:
 		Color m_backgroundColor;
 		Color m_backgroundColor2;
-		int m_height;
-		int m_width;
 
 		bool gradient = false;
 
@@ -34,10 +32,15 @@ namespace Controls {
 			Color _backgroundColor = Color(50, 50, 50)
 		)
 		{
+			m_x = x;
+			m_y = y;
 			m_width = width;
 			m_height = height;
 
 			m_backgroundColor = _backgroundColor;
+
+			if (dynamicResizing)
+				HandleDynamicInit(parent, x, y, width, height);
 
 			hWnd = CreateWindow(
 				TEXT("STATIC"),
@@ -61,6 +64,7 @@ namespace Controls {
 		) {
 			m_backgroundColor2 = _backgroundColor2;
 			gradient = true;
+
 			this->Create(parent, x, y, width, height, hmenu, _backgroundColor);
 		}
 			
