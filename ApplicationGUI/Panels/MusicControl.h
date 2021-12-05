@@ -36,6 +36,7 @@ namespace ApplicationGUI
 			playButton = Controls::CustomDrawnCircleButton();
 			playButton.EnableDynamicResizing();
 			playButton.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
+			playButton.SetPosPivot(ControlPivot::LEFT_MIDDLE_TOP_RIGHT);
 
 			playButton.CreateWithGradient(
 				hWnd,
@@ -48,6 +49,7 @@ namespace ApplicationGUI
 			prevButton = Controls::CustomDrawnCircleButton();
 			prevButton.EnableDynamicResizing();
 			prevButton.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
+			prevButton.SetPosPivot(ControlPivot::LEFT_MIDDLE_TOP_RIGHT);
 
 			prevButton.CreateWithGradient(
 				hWnd,
@@ -60,6 +62,7 @@ namespace ApplicationGUI
 			nextButton = Controls::CustomDrawnCircleButton();
 			nextButton.EnableDynamicResizing();
 			nextButton.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
+			nextButton.SetPosPivot(ControlPivot::LEFT_MIDDLE_TOP_RIGHT);
 
 			nextButton.CreateWithGradient(
 				hWnd,
@@ -71,9 +74,13 @@ namespace ApplicationGUI
 
 			trackTimeSlider = Slider();
 
+			trackTimeSlider.EnableDynamicResizing();
+			trackTimeSlider.SetAnchorX(AnchorPoint::ANCHOR_MIDDLE);
+			trackTimeSlider.SetPosPivot(ControlPivot::LEFT_MIDDLE_TOP_RIGHT);
+
 			trackTimeSlider.Create(
 				hWnd, 
-				400, 80, m_width - 800, 12,
+				0, 80, 800, 12,
 				6,
 				(HMENU)SLIDER_PROGRESS, Color(255, 255, 255), Color(10, 10, 10), Color(0, 0, 0));
 
@@ -102,7 +109,7 @@ namespace ApplicationGUI
 			//	(LPARAM)50);
 		}
 
-		PCWSTR ClassName() const { return L"Panel"; }
+		PCWSTR ClassName() const { return L"MusicPanel"; }
 
 		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
@@ -117,6 +124,7 @@ namespace ApplicationGUI
 				prevButton.OnParentResize(rect);
 				playButton.OnParentResize(rect);
 				nextButton.OnParentResize(rect);
+				trackTimeSlider.OnParentResize(rect);
 
 				return TRUE;
 			}

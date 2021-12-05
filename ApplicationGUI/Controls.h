@@ -26,21 +26,35 @@ namespace Controls {
 		ANCHOR_MIDDLE
 	};
 
+	enum ControlPivot {
+		LEFT_TOP,
+		LEFT_BOTTOM,
+		LEFT_MIDDLE_TOP_RIGHT,
+		LEFT_MIDDLE_BOTTOM,
+		MIDDLE,
+		RIGHT_TOP,
+		RIGHT_BOTTOM,
+		RIGHT_MIDDLE_BOTTOM,
+		RIGHT_MIDDLE_BOTTOM_LEFT
+	};
+
 	class Control
 	{
 	protected:
 
-		int m_height = 0;
-		int m_width = 0;
+		int m_height = 50;
+		int m_width = 50;
 
 		float m_hPercent = false;
 		float m_wPercent = false;
 
-		int m_x = 50;
-		int m_y = 50;
+		int m_x = 0;
+		int m_y = 0;
 
 		float m_xPercent = false;
 		float m_yPercent = false;
+
+		ControlPivot m_pivotPoint = ControlPivot::LEFT_TOP;
 
 		AnchorPoint m_xAnchor = ANCHOR_LEFT;
 		AnchorPoint m_yAnchor = ANCHOR_TOP;
@@ -59,64 +73,89 @@ namespace Controls {
 		void (*cb_onMouseActive)() = NULL;
 		void (*cb_onMouseHover)() = NULL;
 
+		void InitPos(int x, int y, int w, int h) { m_x = x; m_y = y; m_width = w; m_height = h; }
+
 		void GetNewSize(RECT parentNewSize, RECT& newSize)
-		{
-			if (m_xPercent > 0)
-				m_x = m_xPercent * parentNewSize.left;
+		{		
+			if (m_wPercent > 0)
+				newSize.right = m_wPercent * parentNewSize.right;
+			else newSize.right = m_width;
 
-			if (m_yPercent > 0)
-				m_y = m_yPercent * parentNewSize.top;
-
+			if (m_hPercent > 0)
+				newSize.bottom = m_hPercent * parentNewSize.bottom;
+			else newSize.bottom = m_height;
 
 			switch (m_xAnchor)
 			{
 			case ANCHOR_LEFT:
-				if (m_wPercent > 0)
-					m_width = m_wPercent * parentNewSize.right;
-
-				newSize.left = m_x;
+				if (m_xPercent > 0)
+					newSize.left = m_xPercent * parentNewSize.right + m_x;
+				else newSize.left = m_x;
 				break;
 
 			case ANCHOR_MIDDLE:
-				if (m_wPercent > 0)
-					m_width = m_wPercent * (parentNewSize.right / 2);
-
-				newSize.left = m_x + parentNewSize.right / 2;
+				if (m_xPercent > 0)
+					newSize.left = m_xPercent * (parentNewSize.right / 2) + (m_x + parentNewSize.right / 2);
+				else newSize.left = m_x + parentNewSize.right / 2;
 				break;
 
 			case ANCHOR_RIGHT:
-				if (m_wPercent > 0)
-					m_width = m_wPercent * parentNewSize.right;
-
-				newSize.left = parentNewSize.right - m_x;
+				if (m_xPercent > 0)
+					newSize.left = parentNewSize.right - m_width - m_x - m_xPercent * parentNewSize.right;
+				else newSize.left = parentNewSize.right - m_width - m_x;
 				break;
 			}
 
 			switch (m_yAnchor)
 			{
 			case ANCHOR_TOP:
-				if (m_hPercent > 0)
-					m_height = m_hPercent * parentNewSize.bottom;
-
-				newSize.top = m_y;
+				if (m_yPercent > 0)
+					newSize.top = m_yPercent * parentNewSize.bottom + m_y;
+				else newSize.top = m_y;
 				break;
 			case ANCHOR_MIDDLE:
-				if (m_hPercent > 0)
-					m_height = m_hPercent * (parentNewSize.bottom / 2);
-
-				newSize.top = m_y + parentNewSize.bottom / 2;
+				if (m_yPercent > 0)
+					newSize.top = m_yPercent * (parentNewSize.bottom / 2) + (m_y + parentNewSize.bottom / 2);
+				else newSize.top = m_y + parentNewSize.bottom / 2;
 				break;
 			case ANCHOR_BOTTOM:
-				if (m_hPercent > 0)
-					m_height = m_hPercent * parentNewSize.bottom;
-
-				newSize.top = parentNewSize.bottom - m_y;
+				if (m_yPercent > 0)
+					newSize.top = parentNewSize.bottom + m_y + m_yPercent * parentNewSize.bottom;
+				else newSize.top = parentNewSize.bottom + m_y;
 				break;
 			}
 
-
-			newSize.right = m_width;
-			newSize.bottom = m_height;
+			switch (m_pivotPoint)
+			{
+			case ControlPivot::LEFT_BOTTOM:
+				newSize.top -= newSize.bottom;
+				break;
+			case ControlPivot::LEFT_MIDDLE_BOTTOM:
+				newSize.top -= newSize.bottom / 2;
+				break;
+			case ControlPivot::LEFT_MIDDLE_TOP_RIGHT:
+				newSize.left -= newSize.right / 2;
+				break;
+			case ControlPivot::RIGHT_BOTTOM:
+				newSize.left -= newSize.right;
+				newSize.top -= newSize.bottom;
+				break;
+			case ControlPivot::RIGHT_TOP:
+				newSize.left -= newSize.right;
+				break;
+			case ControlPivot::RIGHT_MIDDLE_BOTTOM:
+				newSize.left -= newSize.right;
+				newSize.top -= newSize.bottom / 2;
+				break;
+			case ControlPivot::RIGHT_MIDDLE_BOTTOM_LEFT:
+				newSize.left -= newSize.right / 2;
+				newSize.top -= newSize.bottom;
+				break;
+			case ControlPivot::MIDDLE:
+				newSize.left -= newSize.right / 2;
+				newSize.top -= newSize.bottom / 2;
+				break;
+			}
 		}
 	public:
 		HWND hWnd = NULL;
@@ -130,11 +169,11 @@ namespace Controls {
 		void SetSize(int width, int height) { m_width = width; m_height = height; }
 		void SetPosAndSize(int x, int y, int width, int height) { m_x = x; m_y = y; m_width = width; m_height = height; }
 
-		void SetXpercent(int x) { m_xPercent = x / 100; }
-		void SetYpercent(int y) { m_yPercent = y / 100; }
+		void SetXpercent(float x) { m_xPercent = x / 100; }
+		void SetYpercent(float y) { m_yPercent = y / 100; }
 
-		void SetWidthPercent(int width) { m_wPercent = width / 100; }
-		void SetHeightPercent(int heigth) { m_hPercent = heigth / 100; }
+		void SetWidthPercent(float width) { this->m_wPercent = width / 100; }
+		void SetHeightPercent(float heigth) { m_hPercent = heigth / 100; }
 
 		void SetHMENU(HMENU hmenu) { m_hmenu = hmenu; }
 
@@ -143,6 +182,8 @@ namespace Controls {
 
 		void SetAnchorX(AnchorPoint ap) { m_xAnchor = ap; }
 		void SetAnchorY(AnchorPoint ap) { m_yAnchor = ap; }
+
+		void SetPosPivot(ControlPivot piv) { m_pivotPoint = piv; }
 
 		
 
@@ -155,7 +196,7 @@ namespace Controls {
 			GetNewSize(parentNewSize, newSize);
 
 			SetWindowPos(hWnd, NULL, newSize.left, newSize.top, newSize.right, newSize.bottom, SWP_NOZORDER);
-			ValidateRect(hWnd, NULL);
+			//ValidateRect(hWnd, NULL);
 		}
 
 		void HandleDynamicInit(HWND parent, int& x, int& y, int& w, int& h)
@@ -230,6 +271,8 @@ namespace Controls {
 
 		void Create(HWND parent, int x, int y, int width, int height, int radius, HMENU hmenu, Color backgroundColor, Color fillerColor, Color handleColor)
 		{
+			InitPos(x, y, width, height);
+
 			m_diameter = radius * 2;
 
 			m_backgroundColor = backgroundColor;
@@ -394,8 +437,8 @@ namespace Controls {
 			Color _backgroundColor = Color(255, 255, 255),
 			HMENU hmenu = NULL
 		) {
-			m_width = width;
-			m_height = height;
+			InitPos(x, y, width, height);
+
 			backgroundColor = _backgroundColor;
 			m_parent = parent;
 
@@ -403,17 +446,18 @@ namespace Controls {
 
 			wc.lpfnWndProc = DERIVED_PANEL::WindowProc;
 			wc.hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
-			wc.lpszClassName = _T("Panel");
+			wc.lpszClassName = ClassName();
 
 			RegisterClass(&wc);
 
 			if (dynamicResizing)
 				HandleDynamicInit(parent, x, y, width, height);
 
-			hWnd = CreateWindow(
-				_T("Panel"),
+			hWnd = CreateWindowEx(
+				0,
+				ClassName(),
 				NULL,
-				WS_VISIBLE | WS_CHILD | SS_OWNERDRAW,
+				WS_VISIBLE | WS_CHILD,
 				x, y,
 				width, height,
 				parent,

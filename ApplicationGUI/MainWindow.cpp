@@ -6,6 +6,10 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
+#ifndef UNICODE
+#define UNICODE
+#endif
+
 #include "MainWindow.h"
 
 using namespace ApplicationGUI;
@@ -24,11 +28,12 @@ void MainWindow::AddControls()
 
 		musicControlPanel.EnableDynamicResizing();
 		musicControlPanel.SetAnchorY(Controls::ANCHOR_BOTTOM);
-		musicControlPanel.SetXpercent(50);
+		musicControlPanel.SetWidthPercent(100);
+		musicControlPanel.SetPosPivot(ControlPivot::LEFT_BOTTOM);
 
 		musicControlPanel.Create(
 			hWnd,
-			0, 150,
+			0, 0,
 			width, 150,
 			Color(33, 26, 54)
 		);
@@ -42,7 +47,7 @@ void MainWindow::AddControls()
 		//btn.Create(hWnd);
 	}
 	else {
-		MessageBox(hWnd, _T("Failed to get window width, height!"), _T("Error!"), MB_ICONERROR);
+		MessageBox(hWnd, L"Failed to get window width, height!", L"Error!", MB_ICONERROR);
 		DestroyWindow(hWnd);
 	}
 }
@@ -56,7 +61,7 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		RECT rect;
 		GetClientRect(hWnd, &rect);
-		
+	
 		//SetWindowPos(musicControlPanel.hWnd, NULL, 0, rect.bottom - rect.top - 150, rect.right - rect.left, 150, SWP_NOZORDER);
 
 		musicControlPanel.OnParentResize(rect);
@@ -66,7 +71,7 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_DRAWITEM:
 	{
-		DRAWITEMSTRUCT* lpDrawItem = (DRAWITEMSTRUCT*)lParam;
+		/*DRAWITEMSTRUCT* lpDrawItem = (DRAWITEMSTRUCT*)lParam;
 
 		if (lpDrawItem->hwndItem == musicControlPanel.hWnd)
 		{
@@ -75,7 +80,7 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 			RECT rcClient; GetClientRect(lpDrawItem->hwndItem, &rcClient);
 
 			FillRect(lpDrawItem->hDC, &lpDrawItem->rcItem, hBrush);
-		}
+		}*/
 
 
 		return TRUE;
