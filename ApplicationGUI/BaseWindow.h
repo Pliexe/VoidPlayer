@@ -12,24 +12,24 @@
 
 namespace ApplicationGUI
 {
-	template <class DERIVED_TYPE>
+	template <class DERIVED_WINDOW>
 	class BaseWindow
 	{
 	public:
 		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
-			DERIVED_TYPE *pThis = NULL;
+			DERIVED_WINDOW*pThis = NULL;
 
 			if (uMsg == WM_NCCREATE)
 			{
 				CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
-				pThis = (DERIVED_TYPE*)pCreate->lpCreateParams;
+				pThis = (DERIVED_WINDOW*)pCreate->lpCreateParams;
 				SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pThis);
 
 				pThis->hWnd = hWnd;
 			}
 			else
-				pThis = (DERIVED_TYPE*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+				pThis = (DERIVED_WINDOW*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 			if (pThis)
 				return pThis->HandleMessage(uMsg, wParam, lParam);
@@ -56,9 +56,10 @@ namespace ApplicationGUI
 
 			WNDCLASS wc = { 0 };
 
-			wc.lpfnWndProc = DERIVED_TYPE::WindowProc;
+			wc.lpfnWndProc = DERIVED_WINDOW::WindowProc;
 			wc.hInstance = GetModuleHandle(NULL);
 			wc.lpszClassName = ClassName();
+			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
 			RegisterClass(&wc);
 

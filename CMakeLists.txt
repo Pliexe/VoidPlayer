@@ -19,5 +19,6 @@ endif()
 
 # Include sub-projects.
 add_subdirectory ("ApplicationGUI")
+add_subdirectory ("MusicHandler")
 
 add_subdirectory ("VoidPlayerCore")

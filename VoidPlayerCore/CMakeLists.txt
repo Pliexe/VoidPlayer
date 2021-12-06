@@ -10,5 +10,7 @@ target_compile_features(VoidPlayerCore PUBLIC cxx_std_17)
 #target_link_directories(VoidPlayerCore PRIVATE ApplicationGUI)
 
 include_directories("../ApplicationGUI/")
+include_directories("../MusicHandler/")
 
 target_link_libraries(VoidPlayerCore ApplicationGUI)
+target_link_libraries(VoidPlayerCore MusicHandler)

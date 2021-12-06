@@ -22,7 +22,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	ULONG_PTR			gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-	if (!win.Create(TEXT("Void Player"), WS_OVERLAPPEDWINDOW))
+	if (!win.Create(TEXT("Void Player"), WS_OVERLAPPEDWINDOW | CS_HREDRAW | CS_VREDRAW, WS_EX_ACCEPTFILES))
 	{
 		MessageBox(NULL, L"Failed to open program! Error: 1", L"Fatal Error! (Void Player)", MB_ICONERROR);
 		return 0;

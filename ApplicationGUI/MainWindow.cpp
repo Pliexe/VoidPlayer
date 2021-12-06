@@ -11,9 +11,11 @@
 #endif
 
 #include "MainWindow.h"
+#include "MusicHandler.h"
 
 using namespace ApplicationGUI;
 using namespace Gdiplus;
+using namespace Music;
 
 void MainWindow::AddControls()
 {
@@ -65,6 +67,26 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 		//SetWindowPos(musicControlPanel.hWnd, NULL, 0, rect.bottom - rect.top - 150, rect.right - rect.left, 150, SWP_NOZORDER);
 
 		musicControlPanel.OnParentResize(rect);
+
+		return TRUE;
+	}
+
+	case WM_DROPFILES:
+	{
+		HDROP hDropInfo = (HDROP)wParam;
+		wchar_t sItem[MAX_PATH];
+
+		DragQueryFile(hDropInfo, 0, (LPWSTR)sItem, sizeof(sItem));
+
+		if (GetFileAttributes(sItem) &FILE_ATTRIBUTE_DIRECTORY)
+			MessageBox(hWnd, L"Got folder, i cant play this man!", L"VoidPlayer", 0);
+		else
+		{
+			MessageBox(hWnd, L"Got sound file", sItem, 0);
+			MusicHandler::getInstance().PlayTest(std::wstring(sItem));
+		} 
+
+		DragFinish(hDropInfo);
 
 		return TRUE;
 	}

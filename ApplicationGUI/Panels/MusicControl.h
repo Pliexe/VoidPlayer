@@ -9,7 +9,6 @@
 #pragma once
 
 #include "Controls.h"
-#include <CommCtrl.h>
 
 #define PLAY_BUTTON 1
 #define PREV_BUTTON 2
@@ -80,9 +79,9 @@ namespace ApplicationGUI
 
 			trackTimeSlider.Create(
 				hWnd, 
-				0, 80, 800, 12,
-				6,
-				(HMENU)SLIDER_PROGRESS, Color(255, 255, 255), Color(10, 10, 10), Color(0, 0, 0));
+				0, 80, 800, 10,
+				5,
+				(HMENU)SLIDER_PROGRESS, Color(255, 255, 255), Color(10, 10, 10), Color(255, 255, 255));
 
 			//HWND hwndTrack =CreateWindow(
 			//	TRACKBAR_CLASS,
@@ -183,10 +182,6 @@ namespace ApplicationGUI
 					};
 
 					playButton.DrawControl(lpDrawItem, cbIcon);
-				}
-				else if (lpDrawItem->hwndItem == trackTimeSlider.hWnd)
-				{
-					trackTimeSlider.DrawnControl(lpDrawItem);
 				}
 				
 

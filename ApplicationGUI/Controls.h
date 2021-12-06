@@ -215,12 +215,42 @@ namespace Controls {
 		}
 	};
 
+	template <class DERIVED_CONTROL>
+	class WndProcControl : public Control
+	{
+	public:
+		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+		{
+			DERIVED_CONTROL* pThis = NULL;
+			
+			if (uMsg == WM_NCCREATE)
+			{
+				CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
+				pThis = (DERIVED_CONTROL*)pCreate->lpCreateParams;
+				SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pThis);
+
+				pThis->hWnd = hWnd;
+			}
+			else
+				pThis = (DERIVED_CONTROL*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+			if (pThis)
+				return pThis->HandleMessage(uMsg, wParam, lParam);
+			else
+				return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		}
+
+	protected:
+		virtual LRESULT HandleMessage(UINT umsg, WPARAM wParam, LPARAM lParam) = 0;
+		virtual PCWSTR ClassName() const = 0;
+	};
+
 	class Button : public Control
 	{
 	protected:
 
-		static std::string ClassName() { return "CustomButton"; };
 	public:
+		static std::string ClassName() { return "CustomButton"; };
 
 		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
@@ -243,7 +273,7 @@ namespace Controls {
 
 	};
 
-	class DrawnControl : public Control
+	class DrawnControl
 	{
 	public:
 		void DrawControl(DRAWITEMSTRUCT* lpDrawItem); 
@@ -255,11 +285,12 @@ namespace Controls {
 		}
 	};
 
-	class Slider : public DrawnControl {
+	class Slider : public WndProcControl<Slider>, public DrawnControl {
 	private:
 		Color m_backgroundColor;
 		Color m_fillerColor;
 		Color m_handleColor;
+
 		int m_value = 50;
 
 		int m_maxvalue = 214;
@@ -267,7 +298,62 @@ namespace Controls {
 
 		int m_diameter;
 
+		PCWSTR ClassName() const { return L"Slider"; }
+
 	public:
+
+		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			switch (msg)
+			{
+			case WM_PAINT:
+			{
+				PAINTSTRUCT ps;
+				HDC hdc = BeginPaint(hWnd, &ps);
+
+				DrawControl(ps, hdc);
+				 
+				EndPaint(hWnd, &ps);
+
+
+
+
+				/*PAINTSTRUCT ps;
+				HDC hdc;
+				RECT rect;
+
+				GetClientRect(hWnd, &rect);
+
+				hdc = BeginPaint(hWnd, &ps);
+				SetTextColor(hdc, RGB(0, 0, 0));
+				SetBkMode(hdc, TRANSPARENT);
+				DrawText(hdc, L"Hello World!", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+				EndPaint(hWnd, &ps);*/
+
+				return TRUE;
+			}
+			case WM_LBUTTONDOWN:
+			{
+				
+				SelectSection();
+
+				
+				//HRGN hrng = CreateRectRgn(-50, -50, 1000, 1000);
+
+				//if (SetWindowRgn(hWnd, hrng, TRUE) == 0) MessageBox(hWnd, L"Setrng failed", L"FUCK", MB_ICONERROR);
+				return TRUE;
+			}
+			case WM_MOUSEHOVER:
+			{
+				SelectSection();
+				return TRUE;
+			}
+			default:
+				return DefWindowProc(hWnd, msg, wParam, lParam);
+			}
+
+			return TRUE;
+		}
 
 		void Create(HWND parent, int x, int y, int width, int height, int radius, HMENU hmenu, Color backgroundColor, Color fillerColor, Color handleColor)
 		{
@@ -282,28 +368,63 @@ namespace Controls {
 			if (dynamicResizing)
 				HandleDynamicInit(parent, x, y, width, height);
 
-			hWnd = CreateWindow(
-				TEXT("STATIC"),
+			HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
+
+			WNDCLASS wc = { 0 };
+
+			if (!GetClassInfo(hInstance, ClassName(), &wc))
+			{
+				
+				wc.lpfnWndProc = Slider::WindowProc;
+				wc.hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
+				wc.lpszClassName = ClassName();
+				wc.hCursor = LoadCursor(hInstance, IDC_ARROW);
+				wc.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+				//wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND + 1);
+
+				if (RegisterClass(&wc) == 0)
+				{
+					DWORD errorMessageId = GetLastError();
+
+					wchar_t buf[256];
+
+					FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+						NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+						buf, (sizeof(buf) / sizeof(wchar_t)), NULL);
+
+					MessageBox(hWnd, buf, L"VoidPlayer Error; Slider", MB_ICONERROR);
+				}
+
+				
+			}
+
+			hWnd = CreateWindowEx(
+				0,
+				ClassName(),
 				NULL,
-				WS_CHILD | WS_VISIBLE | SS_NOTIFY | SS_OWNERDRAW,
+				WS_CHILD | WS_VISIBLE,
 				x, y, width, height,
 				parent,
 				hmenu,
-				(HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE),
-				NULL
+				hInstance,
+				this
 			);
 		}
 
-		void DrawnControl(DRAWITEMSTRUCT* lpDrawnItem)
+		void DrawControl(PAINTSTRUCT& ps, HDC& hdc)
 		{
 
-			Graphics graphics(lpDrawnItem->hDC);
+			Graphics graphics(hdc);
 
-			graphics.SetSmoothingMode(SmoothingModeHighQuality);
+			graphics.SetSmoothingMode(SmoothingMode::SmoothingModeHighQuality);
+
+			int oldPageUnit = graphics.SetPageUnit(UnitPixel);
+
+			//Rect rect((int)ps.rcPaint.left, (int)ps.rcPaint.top, (int)ps.rcPaint.right - ps.rcPaint.left, (int)ps.rcPaint.bottom - ps.rcPaint.top);
 
 			RECT cRect;
 
-			GetClientRect(lpDrawnItem->hwndItem, &cRect);
+			GetClientRect(hWnd, &cRect);
 
 			Rect rect = WinRectToGdiRect(cRect);
 
@@ -317,6 +438,31 @@ namespace Controls {
 
 			Rect cornerBackground(fillerLength, 0, m_diameter, m_diameter);
 
+
+			Rect cornerBkg(0, 0, m_diameter, m_diameter);
+			GraphicsPath pathBkg;
+
+			if(fillerLength > m_diameter)
+				pathBkg.AddLine(fillerLength - m_diameter, rect.Height - 1, fillerLength - m_diameter, 0);
+			else {
+				pathBkg.AddArc(cornerBkg, 180, 90);
+			}
+
+			cornerBkg.X = rect.Width - m_diameter;
+			pathBkg.AddArc(cornerBkg, 270, 90);
+
+			cornerBkg.Y = rect.Height - m_diameter - 1;
+			pathBkg.AddArc(cornerBkg, 0, 90);
+
+			if (fillerLength <= m_diameter)
+			{
+				cornerBkg.X = fillerLength;
+				pathBackground.AddArc(cornerBackground, 90, 90);
+			}
+
+			pathBkg.CloseFigure();
+			graphics.FillPath(&brushBackground, &pathBkg);
+
 			if (fillerLength > 0)
 			{
 				SolidBrush brushFiller(m_fillerColor);
@@ -329,52 +475,40 @@ namespace Controls {
 
 				pathFiller.AddArc(cornerFiller, 180, 90);
 
-				if (fillerLength == rect.Width)
-				{
-					cornerBackground.X = rect.Width - m_diameter;
-					pathFiller.AddArc(cornerBackground, 270, 90);
-
-					cornerFiller.Y = rect.Height - m_diameter - 1;
-					pathFiller.AddArc(cornerFiller, 0, 90);
-				}
-				else 
-				{
-					pathFiller.AddLine(fillerLength, 0, fillerLength, rect.Height - 1);
-					pathBackground.AddLine(fillerLength, rect.Height - 1, fillerLength, 0);
-				}
+				cornerFiller.X = fillerLength - m_diameter;
+				pathFiller.AddArc(cornerFiller, 270, 90);
 
 				cornerFiller.Y = rect.Height - m_diameter - 1;
+				pathFiller.AddArc(cornerFiller, 0, 90);
 
+				cornerFiller.X = 0;
 				pathFiller.AddArc(cornerFiller, 90, 90);
 
-				pathFiller.CloseFigure();
+				pathFiller.CloseAllFigures();
 
 				graphics.FillPath(&brushFiller, &pathFiller);
-
-				graphics.DrawPath(&Pen(Color(255, 0, 0)), &pathFiller);
-
-				
-				
-			}
-			else {
-				pathBackground.AddArc(cornerBackground, 180, 90);
-			}	
-
-			cornerBackground.X += rect.Width - fillerLength - m_diameter;
-			pathBackground.AddArc(cornerBackground, 270, 90);
-
-			cornerBackground.Y += rect.Height - m_diameter;
-			pathBackground.AddArc(cornerBackground, 0, 90);
-
-			if (fillerLength <= 0)
-			{
-				cornerBackground.X = 0;
-				pathBackground.AddArc(cornerBackground, 90, 90);
 			}
 
-			pathBackground.CloseFigure();
+			graphics.SetPageUnit((Unit)oldPageUnit);
 
-			graphics.FillPath(&brushBackground, &pathBackground);
+			DrawHandle(fillerLength);
+			
+			//graphics.FillEllipse(&handleBrush, rect);
+		}
+
+		void DrawHandle(int fillerLength)
+		{
+			auto hdc = GetDC(hWnd);
+			auto dc = SaveDC(hdc);
+
+			Graphics graphics(hdc);
+
+			SolidBrush handleBrush(m_handleColor);
+
+			graphics.FillEllipse(&handleBrush, fillerLength - 25, 0, 50, 50);
+
+			//ReleaseDC(hdc, )
+
 		}
 
 		float GetXOffset(POINT mouseOffset, RECT cRect)
@@ -444,9 +578,13 @@ namespace Controls {
 
 			WNDCLASS wc = { 0 };
 
+			HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
+
 			wc.lpfnWndProc = DERIVED_PANEL::WindowProc;
-			wc.hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
+			wc.hInstance = hInstance;
 			wc.lpszClassName = ClassName();
+			wc.hCursor = LoadCursor(hInstance, IDC_ARROW);
+			wc.hbrBackground = (HBRUSH)GetStockBrush(GRAY_BRUSH);
 
 			RegisterClass(&wc);
 
@@ -462,7 +600,7 @@ namespace Controls {
 				width, height,
 				parent,
 				hmenu,
-				(HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE),
+				hInstance,
 				this
 			);
 		}
@@ -478,6 +616,4 @@ namespace Controls {
 		virtual PCWSTR ClassName() const = 0;
 		virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 	};
-
-
 }
