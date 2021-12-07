@@ -15,6 +15,11 @@
 using namespace Music;
 using namespace std;
 
+MusicHandler::MusicHandler()
+{
+	BASS_Init(-1, 44000, BASS_DEVICE_STEREO, 0, NULL);
+}
+
 void MusicHandler::PlayTest(wstring path)
 {
 	//PlaySound(path, GetModuleHandle(NULL), SND_FILENAME | SND_ASYNC);

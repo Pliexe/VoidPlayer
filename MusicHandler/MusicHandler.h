@@ -15,6 +15,7 @@
 #pragma comment(lib, "winmm.lib")
 #include <Windows.h>
 #include <iostream>
+#include "bass.h"
 
 namespace Music
 {
@@ -33,7 +34,7 @@ namespace Music
 
 	private:
 
-		MusicHandler() {}
+		MusicHandler();
 
 	public:
 		MusicHandler(MusicHandler const&)	= delete;

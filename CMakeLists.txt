@@ -18,6 +18,7 @@ if(MSVC)
 endif()
 
 # Include sub-projects.
+add_subdirectory ("BASS")
 add_subdirectory ("ApplicationGUI")
 add_subdirectory ("MusicHandler")
 

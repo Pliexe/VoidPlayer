@@ -18,25 +18,7 @@ using namespace Gdiplus;
 
 namespace Controls {
 
-	enum AnchorPoint {
-		ANCHOR_LEFT,
-		ANCHOR_RIGHT,
-		ANCHOR_TOP,
-		ANCHOR_BOTTOM,
-		ANCHOR_MIDDLE
-	};
-
-	enum ControlPivot {
-		LEFT_TOP,
-		LEFT_BOTTOM,
-		LEFT_MIDDLE_TOP_RIGHT,
-		LEFT_MIDDLE_BOTTOM,
-		MIDDLE,
-		RIGHT_TOP,
-		RIGHT_BOTTOM,
-		RIGHT_MIDDLE_BOTTOM,
-		RIGHT_MIDDLE_BOTTOM_LEFT
-	};
+	
 
 	class Control
 	{
