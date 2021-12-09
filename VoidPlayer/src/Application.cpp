@@ -16,10 +16,38 @@
 
 #include "MainWindow/MainWindow.h"
 
+#ifdef _DEBUG
+
+#include <fcntl.h>
+#include <io.h>
+
+class outbuf : public std::streambuf {
+public:
+	outbuf() {
+		setp(0, 0);
+	}
+
+	virtual int_type overflow(int_type c = traits_type::eof()) {
+		return fputc(c, stdout) == EOF ? traits_type::eof() : c;
+	}
+};
+
+#endif // _DEBUG
+
+
+
 
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
+#ifdef _DEBUG :: Attach Debug Console
+	AllocConsole();
+
+	SetConsoleTitle(L"Debug Console");
+
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+#endif
+
 	MainWindow win;
 
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
@@ -31,6 +59,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		MessageBox(NULL, L"Failed to open program! Error: 1", L"Fatal Error! (Void Player)", MB_ICONERROR);
 		return -1;
 	}
+
+	std::cout << "Test" << std::endl;
 
 	ShowWindow(win.Window(), nCmdShow);
 

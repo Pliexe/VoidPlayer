@@ -6,13 +6,22 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
+#include "pch.h"
+
 #include "Control.h"
+#include "Panel.h"
+#include "CustomDrawnIconButton.h"
 
 namespace Controls {
 
-
-	void Control::GetNewSize(RECT parentNewSize, RECT& newSize)
+	Rect Control::WinRectToGdiRect(RECT rect)
 	{
+		return Rect(rect.left, rect.top, rect.right, rect.bottom);
+	}
+
+	void Control::GetNewSize(RECT& parentNewSize, RECT& newSize)
+	{ 
+
 		if (m_wPercent > 0)
 			newSize.right = (long)m_wPercent * parentNewSize.right;
 		else newSize.right = m_width;
@@ -63,38 +72,38 @@ namespace Controls {
 
 		switch (m_pivotPoint)
 		{
-			case ControlPivot::LEFT_BOTTOM:
+			case ControlPivot::PIVOT_LEFT_BOTTOM:
 				newSize.top -= newSize.bottom;
 				break;
-			case ControlPivot::LEFT_MIDDLE_BOTTOM:
+			case ControlPivot::PIVOT_LEFT_MIDDLE_BOTTOM:
 				newSize.top -= newSize.bottom / 2;
 				break;
-			case ControlPivot::LEFT_MIDDLE_TOP_RIGHT:
+			case ControlPivot::PIVOT_LEFT_MIDDLE_TOP_RIGHT:
 				newSize.left -= newSize.right / 2;
 				break;
-			case ControlPivot::RIGHT_BOTTOM:
+			case ControlPivot::PIVOT_RIGHT_BOTTOM:
 				newSize.left -= newSize.right;
 				newSize.top -= newSize.bottom;
 				break;
-			case ControlPivot::RIGHT_TOP:
+			case ControlPivot::PIVOT_RIGHT_TOP:
 				newSize.left -= newSize.right;
 				break;
-			case ControlPivot::RIGHT_MIDDLE_BOTTOM:
+			case ControlPivot::PIVOT_RIGHT_MIDDLE_BOTTOM:
 				newSize.left -= newSize.right;
 				newSize.top -= newSize.bottom / 2;
 				break;
-			case ControlPivot::RIGHT_MIDDLE_BOTTOM_LEFT:
+			case ControlPivot::PIVOT_RIGHT_MIDDLE_BOTTOM_LEFT:
 				newSize.left -= newSize.right / 2;
 				newSize.top -= newSize.bottom;
 				break;
-			case ControlPivot::MIDDLE:
+			case ControlPivot::PIVOT_MIDDLE:
 				newSize.left -= newSize.right / 2;
 				newSize.top -= newSize.bottom / 2;
 				break;
 		}
 	}	
 
-	std::function<void(WNDCLASS&, HINSTANCE, Controls::Control*)> Control::DefaultClass()
+	std::function<void(WNDCLASS&, HINSTANCE, Control*)> Control::DefaultClass()
 	{
 		return [](WNDCLASS& wc, HINSTANCE hInstance, Control* pThis) {
 			wc.lpfnWndProc = Control::WindowProc;
@@ -106,16 +115,32 @@ namespace Controls {
 		};
 	}
 
-	bool Control::RegisterDefaultWindow(int x, int y, int w, int h, HWND parent, HMENU hmenu, PCWSTR title)
+	void Control::RegisterControl(Control *control)
+	{
+		control->SetParent(hWnd);
+		control->Create();
+		m_Controls.push_back(control);
+	}
+
+	bool Control::RegisterDefaultWindow(RECT size)
 	{
 		hWnd = CreateWindowEx(
-			0, ClassName(), title, WS_VISIBLE | WS_CHILD,
-			x, y, w, h,
-			parent, hmenu, (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE),
+			0, ClassName(), m_text, WS_VISIBLE | WS_CHILD,
+			size.left, size.top, size.right, size.bottom,
+			m_parent, 0, (HINSTANCE)GetWindowLongPtr(m_parent, GWLP_HINSTANCE),
 			this
 		);
 
 		return hWnd != NULL;
+	}
+
+	void Control::OnParentResize(RECT& parentNewSize)
+	{
+		RECT newSize;
+
+		GetNewSize(parentNewSize, newSize);
+
+		SetWindowPos(hWnd, NULL, newSize.left, newSize.top, newSize.right, newSize.bottom, SWP_NOZORDER);
 	}
 
 	LRESULT Control::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -136,6 +161,58 @@ namespace Controls {
 		{
 			switch (uMsg)
 			{
+				case WM_LBUTTONDOWN:
+					if (pThis->onMouseDown != NULL)
+						pThis->onMouseDown(hWnd, MouseButton::LEFT_BUTTON);
+					else return pThis->HandleMessage(uMsg, wParam, lParam);
+					return TRUE;
+				case WM_RBUTTONDOWN:
+					if (pThis->onMouseDown != NULL)
+						pThis->onMouseDown(hWnd, MouseButton::RIGHT_BUTTON);
+					else return pThis->HandleMessage(uMsg, wParam, lParam);
+					return TRUE;
+				case WM_MBUTTONDOWN:
+					if (pThis->onMouseDown != NULL)
+						pThis->onMouseDown(hWnd, MouseButton::MIDDLE_BUTTON);
+					else return pThis->HandleMessage(uMsg, wParam, lParam);
+					return TRUE;
+				case WM_LBUTTONUP:
+					if (pThis->onMouseUp != NULL)
+					{
+						pThis->onMouseUp(hWnd, MouseButton::LEFT_BUTTON);
+						pThis->onClick(hWnd, MouseButton::LEFT_BUTTON);
+					}
+					else return pThis->HandleMessage(uMsg, wParam, lParam);
+					return TRUE;
+				case WM_RBUTTONUP:
+					if (pThis->onMouseUp != NULL)
+					{
+						pThis->onMouseUp(hWnd, MouseButton::RIGHT_BUTTON);
+						pThis->onClick(hWnd, MouseButton::RIGHT_BUTTON);
+					}
+					else return pThis->HandleMessage(uMsg, wParam, lParam);
+					return TRUE;
+				case WM_MBUTTONUP:
+					if (pThis->onMouseUp != NULL)
+					{
+						pThis->onMouseUp(hWnd, MouseButton::MIDDLE_BUTTON);
+						pThis->onClick(hWnd, MouseButton::MIDDLE_BUTTON);
+					}
+					else return pThis->HandleMessage(uMsg, wParam, lParam);
+					return TRUE;
+				case WM_SIZE:
+				{
+					if (pThis->dynamicResizing) {
+						RECT rect;
+
+						GetClientRect(pThis->m_parent, &rect);
+
+						for (Control* control : pThis->m_Controls)
+							control->OnParentResize(rect);
+
+						return TRUE;
+					} else return pThis->HandleMessage(uMsg, wParam, lParam);
+				}
 				case WM_PAINT:
 				{
 					PAINTSTRUCT ps;
@@ -154,14 +231,18 @@ namespace Controls {
 			return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
-	void Control::Create(HWND parent, int x, int y, int width, int height, HMENU hmenu)
+	void Control::Create()
 	{
-		m_x = x;
-		m_y = y;
-		m_width = width;
-		m_height = height;
+		RegisterClassIfUnregistered(DefaultClass());
 
-		m_hmenu = hmenu;
+		RECT rect;
+		RECT parentSize;
+
+		GetClientRect(m_parent, &parentSize);
+
+		GetNewSize(parentSize, rect);
+
+		RegisterDefaultWindow(rect);
 	}
 
 }

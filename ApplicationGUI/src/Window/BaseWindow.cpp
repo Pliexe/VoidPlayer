@@ -6,6 +6,8 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
+#include "pch.h"
+
 #include "BaseWindow.h"
 
 namespace ApplicationGUI {
@@ -29,6 +31,19 @@ namespace ApplicationGUI {
 		return hWnd ? true : false;
 	}
 
+	void BaseWindow::ResizeChildren(RECT& newParentSize)
+	{
+		for (auto control : m_Controls)
+			control->OnParentResize(newParentSize);
+	}
+
+	void BaseWindow::RegisterControl(Controls::Control* control)
+	{
+		control->SetParent(hWnd);
+		control->Create();
+		m_Controls.push_back(control);
+	}
+
 	inline LRESULT GUI_API BaseWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		BaseWindow* pThis = NULL;
@@ -45,7 +60,24 @@ namespace ApplicationGUI {
 			pThis = (BaseWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 		if (pThis)
-			return pThis->HandleMessage(uMsg, wParam, lParam);
+		{
+			switch (uMsg)
+			{
+				case WM_SIZE:
+					if (pThis->resizeChildren)
+					{
+						RECT rect;
+						GetClientRect(hWnd, &rect);
+
+						pThis->ResizeChildren(rect);
+					}
+					else
+					return pThis->HandleMessage(uMsg, wParam, lParam);
+				default:
+					return pThis->HandleMessage(uMsg, wParam, lParam);
+			}
+			
+		}
 		else
 			return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}

@@ -14,6 +14,10 @@ class MainWindow : public ApplicationGUI::BaseWindow
 {
 private:
 	Controls::CustomDrawnIconButton playBtn;
+	Controls::CustomDrawnIconButton nextBtn;
+	Controls::CustomDrawnIconButton prevBtn;
+
+	Controls::Panel musicPanel;
 
 	void AddControls();
 

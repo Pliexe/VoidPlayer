@@ -6,31 +6,10 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
+#include "pch.h"
 #include "CustomDrawnIconButton.h"
 
 namespace Controls {
-
-	bool CustomDrawnIconButton::Create(HWND parent, int x, int y, int width, int height, void(*iconCallback)(Graphics&), HMENU hmenu, Color backgroundColor)
-	{
-		m_backgroundColor = backgroundColor;
-		m_iconCallback = iconCallback;
-		Control::Create(parent, x, y, width, height, hmenu);
-
-		RegisterClassIfUnregistered(parent, this->DefaultClass());
-
-		return RegisterDefaultWindow(x, y, width, height, parent, hmenu);
-	}
-
-	bool CustomDrawnIconButton::Create(HWND parent, int x, int y, int width, int heigth, void (*iconCallback)(Graphics&), Color brushbackgroundColor1, Color brushbackgroundColor2, HMENU hmenu)
-	{
-		m_backgroundColor2 = brushbackgroundColor2;
-		useGradient = true;
-		return this->Create(parent, x, y, width, heigth, iconCallback, hmenu, brushbackgroundColor1);
-	}
 
 	void CustomDrawnIconButton::OnPaint(HDC& hdc, PAINTSTRUCT& ps)
 	{
@@ -48,11 +27,11 @@ namespace Controls {
 			Point point2(50, 50);
 
 			LinearGradientBrush circleBrush(point1, point2, m_backgroundColor, m_backgroundColor2);
-			graphics.FillEllipse(&circleBrush, 0, 0, m_width, m_height);
+			graphics.FillEllipse(&circleBrush, 0, 0, m_width, m_height - 1);
 		} else
 		{
 			SolidBrush circleBrush(m_backgroundColor);
-			graphics.FillEllipse(&circleBrush, 0, 0, m_width, m_height);
+			graphics.FillEllipse(&circleBrush, 0, 0, m_width, m_height - 1);
 		}
 
 		SolidBrush iconBrush(Color(255, 255, 255));

@@ -6,20 +6,20 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #pragma once
 
 #include <Windows.h>
-#include "../Core.h"
+
+#include "Controls/Control.h"
+#include "Core.h"
 
 namespace ApplicationGUI {
 
 	class GUI_API BaseWindow
 	{
 	public:
+		bool resizeChildren = true;
+
 		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 		BaseWindow() : hWnd(NULL) { };
@@ -38,7 +38,13 @@ namespace ApplicationGUI {
 
 		HWND Window() const { return hWnd; }
 
+		void ResizeChildren(RECT& newParentSize);
+
 	protected:
+
+		std::vector<Controls::Control*> m_Controls;
+
+		void RegisterControl(Controls::Control* control);
 
 		virtual PCWSTR ClassName() const = 0;
 		virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;

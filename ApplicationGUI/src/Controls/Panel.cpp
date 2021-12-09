@@ -6,8 +6,18 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
-#pragma once
+#include "pch.h"
+#include "Panel.h"
 
-#include "Window/BaseWindow.h"
-#include "Controls/CustomDrawnIconButton.h"
-#include "Controls/Panel.h"
+namespace Controls {
+	void Panel::OnPaint(HDC& hdc, PAINTSTRUCT& ps)
+	{
+		FillRect(hdc, &ps.rcPaint, m_backgroundBrush);
+	}
+
+	LRESULT Panel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+
+}
