@@ -16,6 +16,7 @@ private:
 	Controls::CustomDrawnIconButton playBtn;
 	Controls::CustomDrawnIconButton nextBtn;
 	Controls::CustomDrawnIconButton prevBtn;
+	Controls::Slider trackTimeSlider;
 
 	Controls::Panel musicPanel;
 

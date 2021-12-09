@@ -14,6 +14,16 @@ namespace ApplicationGUI {
 
 	inline bool GUI_API BaseWindow::Create(PCWSTR lpWindowName, DWORD dwStyle, DWORD dwExStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu)
 	{
+#ifdef _DEBUG
+		freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+
+		std::cout << std::endl;
+		std::cout << "===> Creating new window: (";
+		std::wcout << ClassName();
+		std::cout << ") -> x: " << x << ", y: " << y << ", w: " << nWidth << ", h: " << nHeight << std::endl;
+		std::cout << std::endl;
+#endif // _DEBUG
+
 		WNDCLASS wc = { 0 };
 
 		wc.lpfnWndProc = BaseWindow::WindowProc;

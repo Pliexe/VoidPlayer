@@ -12,9 +12,6 @@ using namespace Controls;
 
 inline void MainWindow::AddControls()
 {
-#ifdef _DEBUG
-	std::cout << "Hi" << std::endl;
-#endif
 
 	musicPanel = Panel();
 
@@ -22,7 +19,7 @@ inline void MainWindow::AddControls()
 	musicPanel.SetAnchorY(ANCHOR_BOTTOM);
 	musicPanel.SetPosPivot(PIVOT_LEFT_BOTTOM);
 	musicPanel.SetWidthPercent(100);
-	musicPanel.SetSize(0, 100);
+	musicPanel.SetSize(0, 300);
 	musicPanel.SetBackgroundBrush(CreateSolidBrush(RGB(200, 200, 200)));
 
 	RegisterControl(&musicPanel);
@@ -98,13 +95,24 @@ inline void MainWindow::AddControls()
 
 	});
 
-	nextBtn.onMouseDown = [](HWND hwnd, MouseButton btn) {
-		MessageBox(hwnd, L"Button clicked!", L"Eyyy it works!!! EVENTS BABY!", MB_OKCANCEL);
+	nextBtn.onMouseUp = [](HWND hwnd, MouseButton btn) {
+		MessageBox(hwnd, L"Button clicked!", L"adawdawd", MB_OKCANCEL);
 	};
 
 	musicPanel.RegisterControl(&nextBtn);
 
+	trackTimeSlider = Slider();
 
+	trackTimeSlider.EnableDynamicResizing();
+	trackTimeSlider.SetAnchorX(ANCHOR_MIDDLE);
+	trackTimeSlider.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
+	trackTimeSlider.SetRadius(5);
+	trackTimeSlider.SetPosAndSize(0, 70, 600, 30);
+	trackTimeSlider.SetValue(20);
+		
+	trackTimeSlider.SetColors(Color(255, 255, 255), Color(20, 200, 200), Color(0, 0, 255));
+
+	musicPanel.RegisterControl(&trackTimeSlider);
 }
 
 LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)

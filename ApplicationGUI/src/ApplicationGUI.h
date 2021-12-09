@@ -11,3 +11,4 @@
 #include "Window/BaseWindow.h"
 #include "Controls/CustomDrawnIconButton.h"
 #include "Controls/Panel.h"
+#include "Controls/Slider.h"

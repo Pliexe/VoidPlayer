@@ -142,6 +142,7 @@ namespace Controls {
 		//HWND Window() const { return hWnd; }
 
 		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static LRESULT CALLBACK WindowProcMinimal(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 		#pragma region Helper functions for changing / getting members
 

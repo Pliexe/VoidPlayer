@@ -14,7 +14,7 @@ using namespace Gdiplus;
 
 namespace Controls {
 
-	class Slider : public Control
+	class GUI_API Slider : public Control
 	{
 	private:
 		Color m_backgroundColor;
@@ -30,10 +30,41 @@ namespace Controls {
 
 		int m_diameter;
 
+		bool heldDown = false;
+
+		void HandleValueDetection()
+		{
+			heldDown = false;
+
+			POINT mousePos;
+			GetCursorPos(&mousePos);
+
+			if (!ScreenToClient(hWnd, &mousePos))
+			{
+				std::cout << "Error: Failed to convert mouse position from screen to client area at Slider!" << std::endl;
+				MessageBox(this->hWnd, L"VoidPlayer: Error", L"Faile to update slider bar!", MB_ICONERROR);
+				return;
+			}
+
+			RECT cRect;
+			GetClientRect(hWnd, &cRect);
+
+			m_value = ((float)mousePos.x / (float)cRect.right) * (m_maxvalue - m_minvalue);
+
+			//RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+			InvalidateRect(hWnd, &cRect, false);
+		}
+
 	public:
 
 		void OnPaint(HDC& hdc, PAINTSTRUCT& ps);
 		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+
+		void Create();
+
+		void SetValue(int value) { m_value = value; }
+		void SetRadius(int radius) { m_diameter = radius * 2; }
 
 		void SetColors(Color backgroundColor, Color fillerColor, Color handleColor)
 		{

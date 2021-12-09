@@ -180,7 +180,7 @@ namespace Controls {
 					if (pThis->onMouseUp != NULL)
 					{
 						pThis->onMouseUp(hWnd, MouseButton::LEFT_BUTTON);
-						pThis->onClick(hWnd, MouseButton::LEFT_BUTTON);
+						if (pThis->onClick != NULL) pThis->onClick(hWnd, MouseButton::LEFT_BUTTON);
 					}
 					else return pThis->HandleMessage(uMsg, wParam, lParam);
 					return TRUE;
@@ -188,7 +188,7 @@ namespace Controls {
 					if (pThis->onMouseUp != NULL)
 					{
 						pThis->onMouseUp(hWnd, MouseButton::RIGHT_BUTTON);
-						pThis->onClick(hWnd, MouseButton::RIGHT_BUTTON);
+						if(pThis->onClick != NULL) pThis->onClick(hWnd, MouseButton::RIGHT_BUTTON);
 					}
 					else return pThis->HandleMessage(uMsg, wParam, lParam);
 					return TRUE;
@@ -196,10 +196,59 @@ namespace Controls {
 					if (pThis->onMouseUp != NULL)
 					{
 						pThis->onMouseUp(hWnd, MouseButton::MIDDLE_BUTTON);
-						pThis->onClick(hWnd, MouseButton::MIDDLE_BUTTON);
+						if (pThis->onClick != NULL) pThis->onClick(hWnd, MouseButton::MIDDLE_BUTTON);
 					}
 					else return pThis->HandleMessage(uMsg, wParam, lParam);
 					return TRUE;
+				case WM_SIZE:
+				{
+					if (pThis->dynamicResizing) {
+						RECT rect;
+
+						GetClientRect(pThis->m_parent, &rect);
+
+						for (Control* control : pThis->m_Controls)
+							control->OnParentResize(rect);
+
+						return TRUE;
+					} else return pThis->HandleMessage(uMsg, wParam, lParam);
+				}
+				case WM_PAINT:
+				{
+					PAINTSTRUCT ps;
+					HDC hdc = BeginPaint(hWnd, &ps);
+
+					pThis->OnPaint(hdc, ps);
+
+					EndPaint(hWnd, &ps);
+
+					return TRUE;
+				}
+				default:
+					return pThis->HandleMessage(uMsg, wParam, lParam);
+			}
+		} else
+			return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
+
+	LRESULT Control::WindowProcMinimal(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		Control* pThis = NULL;
+
+		if (uMsg == WM_NCCREATE)
+		{
+			CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
+			pThis = (Control*)pCreate->lpCreateParams;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pThis);
+
+			pThis->hWnd = hWnd;
+		} else
+			pThis = (Control*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+		if (pThis)
+		{
+			switch (uMsg)
+			{
 				case WM_SIZE:
 				{
 					if (pThis->dynamicResizing) {
