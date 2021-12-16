@@ -10,6 +10,8 @@
 
 #include "Control.h"
 
+#define WM_MOUSEENTER WM_USER
+
 using namespace Gdiplus;
 
 namespace Controls {
@@ -20,8 +22,9 @@ namespace Controls {
 		Color m_backgroundColor;
 		Color m_fillerColor;
 		Color m_handleColor;
+		Color m_fillerHoverColor;
 
-		void DrawHandle(int fillerLength);
+		void DrawHandle(int fillerLength, Graphics* graphics);
 
 		int m_value = 0;
 
@@ -30,12 +33,13 @@ namespace Controls {
 
 		int m_diameter;
 
+		int m_handle_radius;
+		int m_yOffset = 0;
+
 		bool heldDown = false;
 
-		void HandleValueDetection()
+		void UpdateProgressPosition()
 		{
-			heldDown = false;
-
 			POINT mousePos;
 			GetCursorPos(&mousePos);
 
@@ -49,26 +53,62 @@ namespace Controls {
 			RECT cRect;
 			GetClientRect(hWnd, &cRect);
 
+			if (mousePos.x < m_handle_radius) mousePos.x = 0;
+			else if (mousePos.x > cRect.right - m_handle_radius) mousePos.x = cRect.right;
+
+			int lastDrawnPlace = m_value / m_maxvalue * cRect.right;
+
 			m_value = ((float)mousePos.x / (float)cRect.right) * (m_maxvalue - m_minvalue);
 
-			//RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+			RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 
-			InvalidateRect(hWnd, &cRect, false);
+			RECT upperInv;
+			upperInv.top = 0;
+			upperInv.left = lastDrawnPlace - m_handle_radius * 2 - 10;
+			upperInv.bottom = m_height;
+			upperInv.right = lastDrawnPlace + m_handle_radius * 2 + 10;
+
+			//MapWindowPoints(hWnd, m_parent, (LPPOINT)&upperInv, 2);
+
+			//InvalidateRect(m_parent, &upperInv, true);
 		}
+
+		void HandleValueDetection()
+		{
+			UpdateProgressPosition();
+
+			std::cout << "Done" << std::endl;
+		}
+
+		bool m_mouseInside = false;
 
 	public:
 
-		void OnPaint(HDC& hdc, PAINTSTRUCT& ps);
+		void OnPaint(HDC& hdc, RECT& toRepaint);
 		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
 		void Create();
 
 		void SetValue(int value) { m_value = value; }
 		void SetRadius(int radius) { m_diameter = radius * 2; }
+		void SetHandleSize(int radius) 
+		{ 
+			m_handle_radius = radius; 
 
-		void SetColors(Color backgroundColor, Color fillerColor, Color handleColor)
+			if (radius * 2 > m_height)
+			{
+				m_yOffset = radius * 2 - m_height;
+				m_height += m_yOffset;
+				m_yOffset /= 2;
+			}
+
+			m_width += radius * 2;
+		}
+
+		void SetColors(Color backgroundColor, Color fillerHoverColor, Color fillerColor, Color handleColor)
 		{
 			m_backgroundColor = backgroundColor;
+			m_fillerHoverColor = fillerHoverColor;
 			m_fillerColor = fillerColor;
 			m_handleColor = handleColor;
 		}

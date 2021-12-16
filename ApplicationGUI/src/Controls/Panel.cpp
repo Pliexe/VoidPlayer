@@ -10,9 +10,9 @@
 #include "Panel.h"
 
 namespace Controls {
-	void Panel::OnPaint(HDC& hdc, PAINTSTRUCT& ps)
+	void Panel::OnPaint(HDC& hdc, RECT& toRepaint)
 	{
-		FillRect(hdc, &ps.rcPaint, m_backgroundBrush);
+		FillRect(hdc, &toRepaint, m_backgroundBrush);
 	}
 
 	LRESULT Panel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)

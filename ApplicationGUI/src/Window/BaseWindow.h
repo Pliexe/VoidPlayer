@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Windows.h>
+#include "pch.h"
 
 #include "Controls/Control.h"
 #include "Core.h"

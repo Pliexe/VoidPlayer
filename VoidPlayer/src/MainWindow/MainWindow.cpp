@@ -19,8 +19,8 @@ inline void MainWindow::AddControls()
 	musicPanel.SetAnchorY(ANCHOR_BOTTOM);
 	musicPanel.SetPosPivot(PIVOT_LEFT_BOTTOM);
 	musicPanel.SetWidthPercent(100);
-	musicPanel.SetSize(0, 300);
-	musicPanel.SetBackgroundBrush(CreateSolidBrush(RGB(200, 200, 200)));
+	musicPanel.SetSize(0, 120);
+	musicPanel.SetBackgroundBrush(CreateSolidBrush(RGB(20, 24, 66)));
 
 	RegisterControl(&musicPanel);
 
@@ -30,10 +30,10 @@ inline void MainWindow::AddControls()
 	playBtn.SetAnchorX(ANCHOR_MIDDLE);
 	playBtn.SetPosAndSize(0, 10, 50, 50);
 	playBtn.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
-	playBtn.SetBkgColor(Color(50, 50, 50));
+	playBtn.SetBkgColor(Color(255, 255, 255));
 	playBtn.SetIconCallback([](Graphics& graphics) {
 
-		SolidBrush iconBrush(Color(255, 255, 255, 255));
+		SolidBrush iconBrush(Color(0, 10, 115));
 
 		Point verticesT[] = { { 17, 15}, {17, 35}, {35,  25} }; // Why does trigRect.top + move it up??
 
@@ -53,7 +53,7 @@ inline void MainWindow::AddControls()
 	prevBtn.SetAnchorX(ANCHOR_MIDDLE);
 	prevBtn.SetPosAndSize(-70, 10, 50, 50);
 	prevBtn.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
-	prevBtn.SetBkgColor(Color(50, 50, 50));
+	prevBtn.SetBkgColor(Color(0, 10, 115));
 	prevBtn.SetIconCallback([](Graphics& graphics) {
 
 		SolidBrush iconBrush(Color(255, 255, 255, 255));
@@ -80,7 +80,7 @@ inline void MainWindow::AddControls()
 	nextBtn.SetAnchorX(ANCHOR_MIDDLE);
 	nextBtn.SetPosAndSize(70, 10, 50, 50);
 	nextBtn.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
-	nextBtn.SetBkgColor(Color(50, 50, 50));
+	nextBtn.SetBkgColor(Color(0, 10, 115));
 	nextBtn.SetIconCallback([](Graphics& graphics) {
 
 		SolidBrush iconBrush(Color(255, 255, 255, 255));
@@ -107,10 +107,11 @@ inline void MainWindow::AddControls()
 	trackTimeSlider.SetAnchorX(ANCHOR_MIDDLE);
 	trackTimeSlider.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
 	trackTimeSlider.SetRadius(5);
-	trackTimeSlider.SetPosAndSize(0, 70, 600, 30);
+	trackTimeSlider.SetPosAndSize(0, 70, 600, 10);
 	trackTimeSlider.SetValue(20);
-		
-	trackTimeSlider.SetColors(Color(255, 255, 255), Color(20, 200, 200), Color(0, 0, 255));
+	
+	trackTimeSlider.SetColors(Color(150, 150, 150), Color(0, 135, 29), Color(20, 97, 0), Color(255, 255, 255));
+	trackTimeSlider.SetHandleSize(9);
 
 	musicPanel.RegisterControl(&trackTimeSlider);
 }
@@ -132,6 +133,31 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			FillRect(hdc, &ps.rcPaint, brush);
 			EndPaint(hWnd, &ps);
+
+			return TRUE;
+		}
+
+		case WM_DROPFILES:
+		{
+
+			HDROP hDropInfo = (HDROP)wParam;
+
+			wchar_t sItem[MAX_PATH];
+
+			DragQueryFile(hDropInfo, 0, (LPWSTR)sItem, sizeof(sItem));
+
+			if (GetFileAttributes(sItem) & FILE_ATTRIBUTE_DIRECTORY)
+				MessageBox(hWnd, L"Got folder, i cant play this man!", L"VoidPlayer", 0);
+			else
+			{
+				MessageBox(hWnd, L"Got sound file", sItem, 0);
+
+				HSAMPLE sample = BASS_SampleLoad(false, sItem, 0, 0, 1, BASS_SAMPLE_MONO);
+				HCHANNEL channel = BASS_SampleGetChannel(sample, FALSE);
+				BASS_ChannelPlay(channel, FALSE);
+			}
+
+			DragFinish(hDropInfo);
 
 			return TRUE;
 		}

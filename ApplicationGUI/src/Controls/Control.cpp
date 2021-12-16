@@ -218,7 +218,7 @@ namespace Controls {
 					PAINTSTRUCT ps;
 					HDC hdc = BeginPaint(hWnd, &ps);
 
-					pThis->OnPaint(hdc, ps);
+					pThis->OnPaint(hdc, ps.rcPaint);
 
 					EndPaint(hWnd, &ps);
 
@@ -262,12 +262,23 @@ namespace Controls {
 						return TRUE;
 					} else return pThis->HandleMessage(uMsg, wParam, lParam);
 				}
+				case WM_NCPAINT:
+				{
+					PAINTSTRUCT ps;
+					HDC hdc = BeginPaint(hWnd, &ps);
+
+					pThis->OnPaint(hdc, ps.rcPaint);
+
+					EndPaint(hWnd, &ps);
+
+					return TRUE;
+				}
 				case WM_PAINT:
 				{
 					PAINTSTRUCT ps;
 					HDC hdc = BeginPaint(hWnd, &ps);
 
-					pThis->OnPaint(hdc, ps);
+					pThis->OnPaint(hdc, ps.rcPaint);
 
 					EndPaint(hWnd, &ps);
 

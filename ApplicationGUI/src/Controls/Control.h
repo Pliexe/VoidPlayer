@@ -122,7 +122,7 @@ namespace Controls {
 		void EnableDynamicResizing() { dynamicResizing = true; }
 		void DisableDynamicResizing() { dynamicResizing = false; }
 
-		virtual void OnPaint(HDC& hdc, PAINTSTRUCT& ps) = 0;
+		virtual void OnPaint(HDC& hdc, RECT& toRepaint) = 0;
 
 
 		#pragma region Events
@@ -135,7 +135,6 @@ namespace Controls {
 		std::function<void(HWND)> onResize = NULL;
 
 		#pragma endregion
-
 
 		virtual LRESULT HandleMessage(UINT umsg, WPARAM wParam, LPARAM lParam) = 0;
 		virtual PCWSTR ClassName() const = 0;

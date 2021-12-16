@@ -9,4 +9,5 @@
 #include <functional>
 
 #include <Windows.h>
+#include <windowsx.h>
 #include <gdiplus.h>

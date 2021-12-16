@@ -24,7 +24,7 @@ namespace Controls {
 
 
 	public:
-		void OnPaint(HDC& hdc, PAINTSTRUCT& ps);
+		void OnPaint(HDC& hdc, RECT& toRepaint);
 		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
 		void SetBackgroundBrush(HBRUSH brush) { m_backgroundBrush = brush; }

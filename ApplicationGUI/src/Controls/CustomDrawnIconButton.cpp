@@ -11,7 +11,7 @@
 
 namespace Controls {
 
-	void CustomDrawnIconButton::OnPaint(HDC& hdc, PAINTSTRUCT& ps)
+	void CustomDrawnIconButton::OnPaint(HDC& hdc, RECT& toRepaint)
 	{
 		Graphics graphics(hdc); // Create graphics class?
 

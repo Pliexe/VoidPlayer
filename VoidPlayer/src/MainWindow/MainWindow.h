@@ -9,6 +9,8 @@
 #pragma once
 
 #include <ApplicationGUI.h>
+#include <bass.h>
+#include <Windows.h>
 
 class MainWindow : public ApplicationGUI::BaseWindow
 {

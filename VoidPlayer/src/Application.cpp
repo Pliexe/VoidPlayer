@@ -12,30 +12,11 @@
 
 #include <Windows.h>
 #include <gdiplus.h>
+#include <bass.h>
+
 #include "ApplicationGUI.h"
 
 #include "MainWindow/MainWindow.h"
-
-#ifdef _DEBUG
-
-#include <fcntl.h>
-#include <io.h>
-
-class outbuf : public std::streambuf {
-public:
-	outbuf() {
-		setp(0, 0);
-	}
-
-	virtual int_type overflow(int_type c = traits_type::eof()) {
-		return fputc(c, stdout) == EOF ? traits_type::eof() : c;
-	}
-};
-
-#endif // _DEBUG
-
-
-
 
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
@@ -47,6 +28,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 #endif
+
+	BASS_Init(-1, 44100, 0, 0, NULL);
+	BASS_SetVolume(1);
 
 	MainWindow win;
 

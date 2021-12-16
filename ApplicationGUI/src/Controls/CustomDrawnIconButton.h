@@ -29,7 +29,7 @@ namespace Controls {
 
 
 	public:
-		void OnPaint(HDC& hdc, PAINTSTRUCT& ps);
+		void OnPaint(HDC& hdc, RECT& toRepaint);
 		LRESULT HandleMessage(UINT umsg, WPARAM wParam, LPARAM lParam);
 
 		void SetBkgColor(Color bkgC) { m_backgroundColor = bkgC; }
