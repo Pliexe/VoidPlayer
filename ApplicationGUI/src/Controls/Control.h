@@ -38,6 +38,10 @@ namespace Controls {
 		PIVOT_RIGHT_MIDDLE_BOTTOM_LEFT
 	};
 
+	enum TextAlign {
+
+	};
+
 #pragma endregion
 
 #pragma region Buttons
@@ -165,6 +169,8 @@ namespace Controls {
 		void SetAnchorY(AnchorPoint ap) { m_yAnchor = ap; }
 
 		void SetPosPivot(ControlPivot piv) { m_pivotPoint = piv; }
+
+		void Redraw() { RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW); }
 
 		HWND GetHandle() { return hWnd; }
 

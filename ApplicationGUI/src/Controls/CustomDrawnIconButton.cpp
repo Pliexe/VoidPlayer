@@ -27,11 +27,11 @@ namespace Controls {
 			Point point2(50, 50);
 
 			LinearGradientBrush circleBrush(point1, point2, m_backgroundColor, m_backgroundColor2);
-			graphics.FillEllipse(&circleBrush, 0, 0, m_width, m_height - 1);
+			graphics.FillEllipse(&circleBrush, 0, 0, m_width - 1, m_height - 1);
 		} else
 		{
 			SolidBrush circleBrush(m_backgroundColor);
-			graphics.FillEllipse(&circleBrush, 0, 0, m_width, m_height - 1);
+			graphics.FillEllipse(&circleBrush, 0, 0, m_width - 1, m_height - 1);
 		}
 
 		SolidBrush iconBrush(Color(255, 255, 255));

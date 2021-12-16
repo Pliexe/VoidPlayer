@@ -8,17 +8,21 @@
 
 #pragma once
 
+#define CD_COMMAND_LINE 1
+
 #include <ApplicationGUI.h>
-#include <bass.h>
 #include <Windows.h>
 
 class MainWindow : public ApplicationGUI::BaseWindow
 {
-private:
+public:
 	Controls::CustomDrawnIconButton playBtn;
 	Controls::CustomDrawnIconButton nextBtn;
 	Controls::CustomDrawnIconButton prevBtn;
 	Controls::Slider trackTimeSlider;
+	Controls::Label currentTrackLength;
+	Controls::Label totalTrackLength;
+	Controls::Label songTitle;
 
 	Controls::Panel musicPanel;
 

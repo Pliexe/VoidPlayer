@@ -77,19 +77,42 @@ namespace Controls {
 		{
 			UpdateProgressPosition();
 
-			std::cout << "Done" << std::endl;
+			POINT mousePos;
+			GetCursorPos(&mousePos);
+
+			if (ScreenToClient(hWnd, &mousePos))
+			{
+				RECT cRect;
+				GetClientRect(hWnd, &cRect);
+				ClientToScreen(hWnd, (LPPOINT)&cRect);
+
+				if (cRect.left < mousePos.x || mousePos.x > cRect.right || cRect.top < mousePos.y || mousePos.y >  cRect.bottom)
+					m_mouseInside = false;
+			}
+
+			if (onChange != nullptr)
+				onChange(m_value);
 		}
 
 		bool m_mouseInside = false;
 
 	public:
 
+		std::function<void(int newValue)> onChange;
+
 		void OnPaint(HDC& hdc, RECT& toRepaint);
 		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
 		void Create();
 
-		void SetValue(int value) { m_value = value; }
+		void SetMaxValue(int value) { m_maxvalue = value; }
+		void SetMinValue(int value) { m_minvalue = value; }
+		void SetValue(int value) { 
+			if (!heldDown) {
+				m_value = value;
+				RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+			}
+		}
 		void SetRadius(int radius) { m_diameter = radius * 2; }
 		void SetHandleSize(int radius) 
 		{ 

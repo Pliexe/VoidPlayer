@@ -6,18 +6,16 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VoidPlayer/blob/master/LICENSE
  */
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #include <Windows.h>
 #include <gdiplus.h>
-#include <bass.h>
+#include "MusicHandler.h"
+
 
 #include "ApplicationGUI.h"
 
 #include "MainWindow/MainWindow.h"
 
+Music::MusicHandler musicHandler;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
@@ -29,8 +27,36 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 #endif
 
-	BASS_Init(-1, 44100, 0, 0, NULL);
-	BASS_SetVolume(1);
+	HANDLE hMutex = CreateMutex(NULL, TRUE, L"VoidPlayerMutex");
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		HWND hWnd = FindWindow(L"VoidPlayer MainWin Class", L"VoidPlayer");
+
+		if (IsWindow(hWnd))
+		{
+			LPWSTR* szArglist;
+			int nArgs;
+			szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
+
+			
+
+			if (nArgs > 1) {
+				COPYDATASTRUCT cds;
+				cds.dwData = CD_COMMAND_LINE;
+				cds.cbData = ;
+				cds.lpData = szArglist;
+				SendMessage(hWnd, WM_COPYDATA, NULL, (LPARAM)&cds);
+			}
+
+			
+		}
+
+		return FALSE;
+	}
+
+
+
+	musicHandler.Init();
 
 	MainWindow win;
 
@@ -38,11 +64,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	ULONG_PTR					 gdiplusToken;
 	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-	if (!win.Create(L"Void Player", WS_OVERLAPPEDWINDOW, WS_EX_ACCEPTFILES))
+	if (!win.Create(L"VoidPlayer", WS_OVERLAPPEDWINDOW, WS_EX_ACCEPTFILES))
 	{
 		MessageBox(NULL, L"Failed to open program! Error: 1", L"Fatal Error! (Void Player)", MB_ICONERROR);
 		return -1;
 	}
+
+	ReleaseMutex(hMutex);
 
 	std::cout << "Test" << std::endl;
 

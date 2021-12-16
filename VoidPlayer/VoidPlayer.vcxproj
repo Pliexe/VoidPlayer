@@ -61,25 +61,29 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;_CONSOLE;%(PreprocessorDefinitions);UNICODE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ApplicationGUI\src;$(SolutionDir)Dependencies\BASS\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ApplicationGUI\src;$(SolutionDir)MusicHandler\src;$(SolutionDir)Dependencies\BASS\include</AdditionalIncludeDirectories>
       <LanguageStandard>Default</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;Gdi32.lib;Gdiplus.lib;Shell32.lib;ApplicationGUI.lib;bass.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;Gdi32.lib;Gdiplus.lib;Shell32.lib;ApplicationGUI.lib;MusicHandler.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\ApplicationGUI\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\MusicHandler\*.dll" "$(TargetDir)"
+
 xcopy /y /d  "$(SolutionDir)Dependencies\BASS\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>echo "Copying ApplicationGUI.lib"
 xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\ApplicationGUI\*.lib" "$(TargetDir)"
+echo "Copying MusicHandler.lib"
+xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\MusicHandler\*.lib" "$(TargetDir)"
 echo "Copying bass.lib"
 xcopy /y /d  "$(SolutionDir)Dependencies\BASS\lib\*.lib" "$(TargetDir)"</Command>
     </PreBuildEvent>
@@ -90,9 +94,9 @@ xcopy /y /d  "$(SolutionDir)Dependencies\BASS\lib\*.lib" "$(TargetDir)"</Command
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);UNICODE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ApplicationGUI\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ApplicationGUI\src;$(SolutionDir)MusicHandler\src;$(SolutionDir)Dependencies\BASS\include</AdditionalIncludeDirectories>
       <LanguageStandard>Default</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
@@ -108,12 +112,20 @@ xcopy /y /d  "$(SolutionDir)Dependencies\BASS\lib\*.lib" "$(TargetDir)"</Command
       <Command>xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\ApplicationGUI\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\ApplicationGUI\*.lib" "$(TargetDir)"</Command>
+      <Command>echo "Copying ApplicationGUI.lib"
+xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\ApplicationGUI\*.lib" "$(TargetDir)"
+echo "Copying MusicHandler.lib"
+xcopy /y /d  "$(SolutionDir)$(BaseOutputPath)$(Configuration) $(Platform)\MusicHandler\*.lib" "$(TargetDir)"
+echo "Copying bass.lib"
+xcopy /y /d  "$(SolutionDir)Dependencies\BASS\lib\*.lib" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\ApplicationGUI\ApplicationGUI.vcxproj">
       <Project>{b4da3716-f3b3-424b-a996-7b0caf447c98}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\MusicHandler\MusicHandler.vcxproj">
+      <Project>{aba25ef1-60b0-40f1-882f-f6e251936a30}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,20 +7,40 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ApplicationGUI", "Applicati
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoidPlayer", "VoidPlayer\VoidPlayer.vcxproj", "{7027F29B-18FA-4823-B064-66BA8F9FB94A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MusicHandler", "MusicHandler\MusicHandler.vcxproj", "{ABA25EF1-60B0-40F1-882F-F6E251936A30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Debug|x64.ActiveCfg = Debug|x64
 		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Debug|x64.Build.0 = Debug|x64
+		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Debug|x86.ActiveCfg = Debug|x64
+		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Debug|x86.Build.0 = Debug|x64
 		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Release|x64.ActiveCfg = Release|x64
 		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Release|x64.Build.0 = Release|x64
+		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Release|x86.ActiveCfg = Release|x64
+		{B4DA3716-F3B3-424B-A996-7B0CAF447C98}.Release|x86.Build.0 = Release|x64
 		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Debug|x64.ActiveCfg = Debug|x64
 		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Debug|x64.Build.0 = Debug|x64
+		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Debug|x86.ActiveCfg = Debug|x64
+		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Debug|x86.Build.0 = Debug|x64
 		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Release|x64.ActiveCfg = Release|x64
 		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Release|x64.Build.0 = Release|x64
+		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Release|x86.ActiveCfg = Release|x64
+		{7027F29B-18FA-4823-B064-66BA8F9FB94A}.Release|x86.Build.0 = Release|x64
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Debug|x64.ActiveCfg = Debug|x64
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Debug|x64.Build.0 = Debug|x64
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Debug|x86.ActiveCfg = Debug|Win32
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Debug|x86.Build.0 = Debug|Win32
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Release|x64.ActiveCfg = Release|x64
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Release|x64.Build.0 = Release|x64
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Release|x86.ActiveCfg = Release|Win32
+		{ABA25EF1-60B0-40F1-882F-F6E251936A30}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

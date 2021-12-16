@@ -7,11 +7,21 @@
  */
 
 #include "MainWindow.h"
+#include "MusicHandler.h"
+
+extern Music::MusicHandler musicHandler;
 
 using namespace Controls;
 
 inline void MainWindow::AddControls()
 {
+	musicHandler.onPlay = [&]() {
+		std::cout << "Title: ";
+		std::wcout << musicHandler.current.title;
+		std::cout << std::endl;
+		songTitle.SetText(musicHandler.current.title.c_str());
+		playBtn.Redraw();
+	};
 
 	musicPanel = Panel();
 
@@ -31,18 +41,36 @@ inline void MainWindow::AddControls()
 	playBtn.SetPosAndSize(0, 10, 50, 50);
 	playBtn.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
 	playBtn.SetBkgColor(Color(255, 255, 255));
-	playBtn.SetIconCallback([](Graphics& graphics) {
+	playBtn.SetIconCallback([&](Graphics& graphics) {
 
-		SolidBrush iconBrush(Color(0, 10, 115));
+		if (musicHandler.IsPaused())
+		{
+			SolidBrush iconBrush(Color(0, 10, 115));
 
-		Point verticesT[] = { { 17, 15}, {17, 35}, {35,  25} }; // Why does trigRect.top + move it up??
+			Point verticesT[] = { { 17, 15}, {17, 35}, {35,  25} }; // Why does trigRect.top + move it up??
 
-		graphics.FillPolygon(&iconBrush, verticesT, 3);
+			graphics.FillPolygon(&iconBrush, verticesT, 3);
+		} else {
+			SolidBrush iconBrush(Color(0, 10, 115));
 
+			graphics.FillRectangle(&iconBrush, 15, 15, 7, 20);
+			graphics.FillRectangle(&iconBrush, 28, 15, 7, 20);
+
+		}
 	});
 
-	playBtn.onMouseDown = [](HWND hwnd, MouseButton btn) {
-		MessageBox(hwnd, L"Button clicked!", L"Eyyy it works!!! EVENTS BABY!", MB_OKCANCEL);
+	playBtn.onMouseDown = [&](HWND hwnd, MouseButton btn) {
+
+		if (musicHandler.IsPaused())
+		{
+			musicHandler.Play();
+			playBtn.Redraw();
+		} else
+		{
+			musicHandler.Pause();
+			playBtn.Redraw();
+		}
+		
 	};
 
 	musicPanel.RegisterControl(&playBtn);
@@ -82,7 +110,6 @@ inline void MainWindow::AddControls()
 	nextBtn.SetPosPivot(PIVOT_LEFT_MIDDLE_TOP_RIGHT);
 	nextBtn.SetBkgColor(Color(0, 10, 115));
 	nextBtn.SetIconCallback([](Graphics& graphics) {
-
 		SolidBrush iconBrush(Color(255, 255, 255, 255));
 		Pen iconPen(Color(255, 255, 255, 255));
 
@@ -92,7 +119,6 @@ inline void MainWindow::AddControls()
 		graphics.FillPolygon(&iconBrush, vertices1P, 3);
 		graphics.FillPolygon(&iconBrush, vertices2P, 3);
 		graphics.DrawLine(&iconPen, 35, 15, 35, 35);
-
 	});
 
 	nextBtn.onMouseUp = [](HWND hwnd, MouseButton btn) {
@@ -112,8 +138,66 @@ inline void MainWindow::AddControls()
 	
 	trackTimeSlider.SetColors(Color(150, 150, 150), Color(0, 135, 29), Color(20, 97, 0), Color(255, 255, 255));
 	trackTimeSlider.SetHandleSize(9);
+	trackTimeSlider.onChange = [&](int newvalue) {
+		musicHandler.SetPosition(newvalue);
+
+		if (musicHandler.IsPaused())
+		{
+			double elapsed = musicHandler.Elapsed();
+
+			wchar_t text[64];
+
+			swprintf(text, sizeof(text), L"%u:%02u", (int)elapsed / 60, (int)elapsed % 60);
+
+			currentTrackLength.SetText(text);
+		}
+	};
 
 	musicPanel.RegisterControl(&trackTimeSlider);
+
+	currentTrackLength.SetText(L"00:00");
+	currentTrackLength.SetPosAndSize(-350, 70, 200, 50);
+	currentTrackLength.EnableDynamicResizing();
+	currentTrackLength.SetAnchorX(Controls::ANCHOR_MIDDLE);
+	currentTrackLength.SetColor(Color(255, 255, 255));
+
+	musicPanel.RegisterControl(&currentTrackLength);
+
+	totalTrackLength.SetText(L"00:00");
+	totalTrackLength.SetPosAndSize(350, 70, 200, 50);
+	totalTrackLength.EnableDynamicResizing();
+	totalTrackLength.SetAnchorX(Controls::ANCHOR_MIDDLE);
+	totalTrackLength.SetColor(Color(255, 255, 255));
+
+	musicPanel.RegisterControl(&totalTrackLength);
+
+	songTitle.SetPosAndSize(10, 20, 800, 50);
+	songTitle.EnableDynamicResizing();
+	songTitle.SetFontSize(18);
+	songTitle.SetText(L"IDK");
+	//songTitle.SetAnchorX();
+	songTitle.SetColor(Color(255, 255, 255));
+
+	musicPanel.RegisterControl(&songTitle);
+
+	LPWSTR* szArglist;
+	int nArgs;
+	szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
+
+
+	if (nArgs > 1)
+	{
+		DWORD dwAttrib = GetFileAttributes(szArglist[1]);
+
+		if ((dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
+		{
+			musicHandler.queue.Add(szArglist[1]);
+
+			musicHandler.StartPlayback(0, [&]() {
+				trackTimeSlider.SetMaxValue(musicHandler.CurrentLength());
+			});
+		}
+	}
 }
 
 LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -122,7 +206,10 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_CREATE:
 			AddControls();
-			return TRUE;
+
+			SetTimer(hWnd, 0, 100, 0);
+
+			break;
 
 		case WM_PAINT:
 		{
@@ -134,7 +221,7 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 			FillRect(hdc, &ps.rcPaint, brush);
 			EndPaint(hWnd, &ps);
 
-			return TRUE;
+			break;
 		}
 
 		case WM_DROPFILES:
@@ -150,23 +237,62 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 				MessageBox(hWnd, L"Got folder, i cant play this man!", L"VoidPlayer", 0);
 			else
 			{
-				MessageBox(hWnd, L"Got sound file", sItem, 0);
+				//MessageBox(hWnd, L"Added to queue!", sItem, 0);
 
-				HSAMPLE sample = BASS_SampleLoad(false, sItem, 0, 0, 1, BASS_SAMPLE_MONO);
+				musicHandler.queue.Add(sItem);
+
+				/*HSAMPLE sample = BASS_SampleLoad(false, sItem, 0, 0, 1, BASS_SAMPLE_MONO);
 				HCHANNEL channel = BASS_SampleGetChannel(sample, FALSE);
-				BASS_ChannelPlay(channel, FALSE);
+				BASS_ChannelPlay(channel, FALSE);*/
 			}
 
 			DragFinish(hDropInfo);
 
-			return TRUE;
+			break;
 		}
 
-		case WM_LBUTTONDOWN:
+		case WM_COPYDATA:
 		{
-			MessageBox(hWnd, L"HEYYY", L"Clicked inside window", 0);
+			COPYDATASTRUCT* cds;
+			cds = (COPYDATASTRUCT*)lParam;
 
-			return TRUE;
+			if (cds->dwData == CD_COMMAND_LINE)
+			{
+				
+				LPWSTR* arglist = (LPWSTR*)cds->lpData;
+
+
+
+				/*DWORD dwAttrib = GetFileAttributes(arglist[1]);
+
+				if ((dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
+				{
+					musicHandler.queue.Add(arglist[1]);
+
+					musicHandler.StartPlayback(0, [&]() {
+						trackTimeSlider.SetMaxValue(musicHandler.CurrentLength());
+					});
+				}*/
+			}
+			break;
+		}
+
+		case WM_TIMER:
+		{
+			if (!musicHandler.IsPaused())
+			{
+				double elapsed = musicHandler.Elapsed();
+
+				trackTimeSlider.SetValue(elapsed);
+
+				wchar_t text[64];
+
+				swprintf(text, sizeof(text), L"%u:%02u", (int)elapsed / 60, (int)elapsed % 60);
+
+				currentTrackLength.SetText(text);
+			}
+
+			break;
 		}
 
 		case WM_SIZE:
@@ -177,13 +303,12 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			musicPanel.OnParentResize(rect);
 
-			return TRUE;
+			break;
 		}
 
 		case WM_DESTROY:
 			PostQuitMessage(0);
-			return TRUE;
-
+			break;
 		default:
 			return DefWindowProc(hWnd, msg, wParam, lParam);
 

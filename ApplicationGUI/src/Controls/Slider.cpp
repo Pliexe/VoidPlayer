@@ -49,14 +49,6 @@ namespace Controls {
 
 		//Rect rect((int)ps.rcPaint.left, (int)ps.rcPaint.top, (int)ps.rcPaint.right - ps.rcPaint.left, (int)ps.rcPaint.bottom - ps.rcPaint.top);
 
-#ifdef _DEBUG
-
-		std::cout << "Value of slider is: " << m_value << std::endl;
-
-#endif // _DEBUG
-
-
-
 		SolidBrush brushBackground(m_backgroundColor);
 
 		GraphicsPath pathBkg;

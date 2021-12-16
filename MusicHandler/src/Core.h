@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "Window/BaseWindow.h"
-#include "Controls/CustomDrawnIconButton.h"
-#include "Controls/Panel.h"
-#include "Controls/Slider.h"
-#include "Controls/Label.h"
+#ifdef APPMUSIC_BUILD_DLL
+#define MUSIC_API __declspec(dllexport)
+#else
+#define MUSIC_API __declspec(dllimport)
+#endif

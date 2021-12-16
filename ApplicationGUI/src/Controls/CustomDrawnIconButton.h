@@ -21,7 +21,7 @@ namespace Controls {
 		Color m_backgroundColor;
 		Color m_backgroundColor2;
 
-		void (*m_iconCallback)(Graphics&);
+		std::function<void(Graphics&)> m_iconCallback;
 
 		bool useGradient = false;
 
@@ -39,7 +39,7 @@ namespace Controls {
 			useGradient = true;
 		}
 
-		void SetIconCallback(void (*iconCallback)(Graphics&))
+		void SetIconCallback(std::function<void(Graphics&)> iconCallback)
 		{
 			m_iconCallback = iconCallback;
 		}
