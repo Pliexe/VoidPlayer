@@ -33,6 +33,7 @@ namespace Music {
 
 		void Add(wchar_t path[MAX_PATH]);
 		void Remove(int index);
+		Track Get(int index);
 		Track Pop(int i);
 		unsigned int Size() { return tracks.size(); }
 

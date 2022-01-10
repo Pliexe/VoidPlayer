@@ -39,7 +39,9 @@ namespace Controls {
 	};
 
 	enum TextAlign {
-
+		TextAlign_Left,
+		TextAlign_Middle,
+		TextAlign_Right
 	};
 
 #pragma endregion
@@ -88,9 +90,9 @@ namespace Controls {
 		AnchorPoint m_xAnchor = AnchorPoint::ANCHOR_LEFT;
 		AnchorPoint m_yAnchor = AnchorPoint::ANCHOR_TOP;
 
-		#pragma endregion
+		TextAlign m_textAlign = TextAlign::TextAlign_Left;
 
-		LPCWSTR m_text = NULL;
+		#pragma endregion
 
 		HWND m_parent = NULL;	// Handle to parent window
 		HWND hWnd = NULL;		// Handle to this control (window)
@@ -99,6 +101,7 @@ namespace Controls {
 
 
 		void GetNewSize(RECT& parentNewSize, RECT& newSize); // Get a new position and size in current parent cordinates (This was pain to make)
+		void GetTextPosition(RectF stringLenth, PointF& position);
 
 		std::function<void(WNDCLASS&, HINSTANCE, Control*)> DefaultClass();
 		void RegisterClassIfUnregistered(std::function<void(WNDCLASS&, HINSTANCE, Control*)> registerClass)
@@ -167,10 +170,11 @@ namespace Controls {
 
 		void SetAnchorX(AnchorPoint ap) { m_xAnchor = ap; }
 		void SetAnchorY(AnchorPoint ap) { m_yAnchor = ap; }
+		void SetTextAlign(TextAlign align) { m_textAlign = align; }
 
 		void SetPosPivot(ControlPivot piv) { m_pivotPoint = piv; }
 
-		void Redraw() { RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW); }
+		void Redraw() { RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE); }
 
 		HWND GetHandle() { return hWnd; }
 

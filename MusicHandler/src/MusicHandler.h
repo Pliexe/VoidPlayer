@@ -21,7 +21,7 @@ namespace Music {
 
 	class MUSIC_API MusicHandler
 	{
-
+	public:
 		enum ActiveType {
 			Active_Stopped = BASS_ACTIVE_STOPPED,
 			Active_Playing = BASS_ACTIVE_PLAYING,
@@ -47,8 +47,10 @@ namespace Music {
 
 	public:
 
+		bool playNext = false;
+
 		Queue queue;
-		Track current;
+		unsigned int currentIndex = 0;
 
 		DWORD GetActiveState() { return BASS_ChannelIsActive(channel); }
 		bool IsPaused() { 
@@ -59,6 +61,19 @@ namespace Music {
 
 		int StartPlayback(unsigned int i, std::function<void()> handleBeforePlaying = nullptr);
 		bool SetPosition(double seconds);
+
+		int GetNext()
+		{
+			if (currentIndex >= queue.Size() - 1)
+				return currentIndex;
+			else currentIndex = currentIndex + 1;
+		}
+
+		int GetPrevious()
+		{
+			if (currentIndex <= 0) return 0;
+			else currentIndex = currentIndex - 1;
+		}
 
 		bool Pause();
 		bool Play(bool restart = false);

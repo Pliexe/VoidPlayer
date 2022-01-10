@@ -23,10 +23,20 @@ public:
 	Controls::Label currentTrackLength;
 	Controls::Label totalTrackLength;
 	Controls::Label songTitle;
+	HWND tHwnd;
 
 	Controls::Panel musicPanel;
 
 	void AddControls();
+
+	void PlayPause();
+
+	void Next();
+
+	void Test()
+	{
+		MessageBox(0, L"Mutex Msg", L"WORKS", 0);
+	}
 
 public:
 	PCWSTR ClassName() const { return L"VoidPlayer MainWin Class"; }

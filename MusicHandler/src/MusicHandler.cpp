@@ -18,7 +18,7 @@ namespace Music {
 	#endif // _DEBUG
 
 		BASS_Init(-1, 44100, 0, 0, NULL);
-		BASS_SetVolume(.5);
+		//BASS_SetVolume(.5);
 	}
 
 	bool MusicHandler::SetPosition(double seconds)
@@ -52,16 +52,18 @@ namespace Music {
 	#ifdef _DEBUG
 		freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 
-		std::cout << "Init clicked" << std::endl;
+		std::cout << "Init clicked: " << i << std::endl;
 	#endif // _DEBUG
 
 		unsigned int test = queue.Size();
 
 		if (queue.isEmpty()) return 0;
+		if (i < 0) return 0;
 		if (i >= queue.Size()) return -1;
 		if (channel != NULL) BASS_StreamFree(channel);
 
-		current = queue.Pop(i);
+		currentIndex = i;
+		Track current = queue.Get(currentIndex);
 
 	#ifdef _DEBUG
 		std::wcout << L"Path: " << current.path;
@@ -83,7 +85,10 @@ namespace Music {
 		BASS_ChannelPlay(channel, FALSE);
 
 		if (onPlay != nullptr)
+		{
 			onPlay();
+			playNext = true;
+		}
 
 		return 1;
 	}

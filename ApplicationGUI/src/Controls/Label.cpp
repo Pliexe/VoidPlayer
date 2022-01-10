@@ -12,8 +12,8 @@
 
 void Controls::Label::OnPaint(HDC& hdc, RECT& toRepaint)
 {
-	static bool first = true;
-	static RectF lastStringSize;
+	static RectF lastStringSize(0, 0, m_width, m_height);
+	static PointF lastPosition(0, 0);
 
 	static FontFamily fontFamily(L"Arial");
 	Font font(&fontFamily, m_fontSize, FontStyleRegular, UnitPixel);
@@ -23,46 +23,54 @@ void Controls::Label::OnPaint(HDC& hdc, RECT& toRepaint)
 
 	GetClientRect(hWnd, &cRect);
 
-	if (first)
-	{
-		first = false;
-		Graphics graphics(hdc);
+	HDC hdcBuffer = CreateCompatibleDC(hdc);
+	HBITMAP hBmp = CreateCompatibleBitmap(hdc, cRect.right, cRect.bottom);
+	SelectObject(hdcBuffer, hBmp);
 
-		graphics.SetSmoothingMode(SmoothingModeHighQuality);
+	Control* parentThis = (Control*)GetWindowLongPtr(m_parent, GWLP_USERDATA);
 
-		graphics.DrawString(m_text, -1, &font, PointF(m_tX, m_tY), &solidBrush);
+	Graphics graphics(hdcBuffer);
 
-		RectF layoutRect(cRect.left, cRect.top, cRect.right, cRect.bottom);
-		graphics.MeasureString(m_text, lstrlen(m_text), &font, layoutRect, &lastStringSize);
+	graphics.SetSmoothingMode(SmoothingModeHighQuality);
 
-	} else {
+	RectF newStringSize;
+	RectF layoutRect(cRect.left, cRect.top, cRect.right - 1, cRect.bottom - 1);
+	graphics.MeasureString(m_text.c_str(), m_text.length(), &font, layoutRect, &newStringSize);
 
-		HDC hdcBuffer = CreateCompatibleDC(hdc);
-		HBITMAP hBmp = CreateCompatibleBitmap(hdc, cRect.right, cRect.bottom);
-		SelectObject(hdcBuffer, hBmp);
+	//if (newStringSize.Width > lastStringSize.Width) lastStringSize.Width = newStringSize.Width;
+	//if (newStringSize.Height > lastStringSize.Height) lastStringSize.Height = newStringSize.Height;
 
-		Control* parentThis = (Control*)GetWindowLongPtr(m_parent, GWLP_USERDATA);
+	PointF textPosition;
+	GetTextPosition(newStringSize, textPosition);
 
-		Graphics graphics(hdcBuffer);
+	/*RECT toUpdate;
+	toUpdate.left = textPosition.X;
+	toUpdate.right = lastStringSize.Width;
+	toUpdate.top = textPosition.Y;
+	toUpdate.bottom = lastStringSize.Height;
+	parentThis->OnPaint(hdcBuffer, toUpdate);*/
 
-		graphics.SetSmoothingMode(SmoothingModeHighQuality);
+	parentThis->OnPaint(hdcBuffer, cRect);
+	 
+	/*Pen pen(Color(255, 0, 0));
+	Pen pen2(Color(0, 255, 0));
 
-		RectF newStringSize;
-		RectF layoutRect(cRect.left, cRect.top, cRect.right, cRect.bottom);
-		graphics.MeasureString(m_text, lstrlen(m_text), &font, layoutRect, &newStringSize);
+	Rect toUpdateR;
 
-		if (newStringSize.Width > lastStringSize.Width) lastStringSize.Width = newStringSize.Width;
-		if (newStringSize.Height > lastStringSize.Height) lastStringSize.Height = newStringSize.Height;
+	toUpdateR.X = textPosition.X;
+	toUpdateR.Width= lastStringSize.Width;
+	toUpdateR.Y = textPosition.Y;
+	toUpdateR.Height= lastStringSize.Height;*/
 
-		RECT toUpdate;
-		toUpdate.left = lastStringSize.X;
-		toUpdate.right = lastStringSize.Width;
-		toUpdate.top = lastStringSize.Y;
-		toUpdate.bottom = lastStringSize.Height;
-		parentThis->OnPaint(hdcBuffer, toUpdate);
+	/*graphics.DrawRectangle(&pen, toUpdateR);
+	graphics.DrawRectangle(&pen2, layoutRect);*/
 
-		graphics.DrawString(m_text, -1, &font, PointF(m_tX, m_tY), &solidBrush);
-		BitBlt(hdc, lastStringSize.X, lastStringSize.Y, lastStringSize.Width, lastStringSize.Height, hdcBuffer, lastStringSize.X, lastStringSize.Y, SRCCOPY);
-		lastStringSize = newStringSize;
-	}
+	graphics.DrawString(m_text.c_str(), -1, &font, textPosition, &solidBrush);
+
+	//BitBlt(hdc, lastPosition.X, lastPosition.Y, lastStringSize.Width, lastStringSize.Height, hdcBuffer, textPosition.X, textPosition.Y, SRCCOPY);
+	BitBlt(hdc, 0, 0, cRect.right, cRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
+	lastStringSize = newStringSize;
+
+	DeleteDC(hdcBuffer);
+	DeleteObject(hBmp);
 }

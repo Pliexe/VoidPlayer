@@ -8,6 +8,7 @@
 
 #include "MainWindow.h"
 #include "MusicHandler.h"
+#include "Queue.h"
 
 extern Music::MusicHandler musicHandler;
 
@@ -16,10 +17,25 @@ using namespace Controls;
 inline void MainWindow::AddControls()
 {
 	musicHandler.onPlay = [&]() {
+		Music::Track current = musicHandler.queue.Get(musicHandler.currentIndex);
 		std::cout << "Title: ";
-		std::wcout << musicHandler.current.title;
+		std::wcout << current.title;
 		std::cout << std::endl;
-		songTitle.SetText(musicHandler.current.title.c_str());
+		songTitle.SetText(current.title.c_str());
+
+		double duration = musicHandler.CurrentLength();
+
+		std::cout << "Length is: " << duration << std::endl;
+
+		wchar_t text[64];
+
+		swprintf(text, sizeof(text), L"%02u:%02u", (int)duration / 60, (int)duration % 60);
+
+		std::wcout << L"string is: " << text;
+		std::cout << std::endl;
+
+
+		totalTrackLength.SetText(text);
 		playBtn.Redraw();
 	};
 
@@ -59,19 +75,7 @@ inline void MainWindow::AddControls()
 		}
 	});
 
-	playBtn.onMouseDown = [&](HWND hwnd, MouseButton btn) {
-
-		if (musicHandler.IsPaused())
-		{
-			musicHandler.Play();
-			playBtn.Redraw();
-		} else
-		{
-			musicHandler.Pause();
-			playBtn.Redraw();
-		}
-		
-	};
+	playBtn.onMouseDown = [&](HWND hwnd, MouseButton btn) { PlayPause(); };
 
 	musicPanel.RegisterControl(&playBtn);
 
@@ -96,8 +100,10 @@ inline void MainWindow::AddControls()
 
 	});
 
-	prevBtn.onMouseDown = [](HWND hwnd, MouseButton btn) {
-		MessageBox(hwnd, L"Button clicked!", L"Eyyy it works!!! EVENTS BABY!", MB_OKCANCEL);
+	prevBtn.onMouseUp = [&](HWND hwnd, MouseButton btn) {
+		musicHandler.StartPlayback(musicHandler.GetPrevious(), [&]() {
+			trackTimeSlider.SetMaxValue(musicHandler.CurrentLength());
+		});
 	};
 
 	musicPanel.RegisterControl(&prevBtn);
@@ -121,9 +127,7 @@ inline void MainWindow::AddControls()
 		graphics.DrawLine(&iconPen, 35, 15, 35, 35);
 	});
 
-	nextBtn.onMouseUp = [](HWND hwnd, MouseButton btn) {
-		MessageBox(hwnd, L"Button clicked!", L"adawdawd", MB_OKCANCEL);
-	};
+	nextBtn.onMouseUp = [&](HWND hwnd, MouseButton btn) { Next(); };
 
 	musicPanel.RegisterControl(&nextBtn);
 
@@ -147,7 +151,7 @@ inline void MainWindow::AddControls()
 
 			wchar_t text[64];
 
-			swprintf(text, sizeof(text), L"%u:%02u", (int)elapsed / 60, (int)elapsed % 60);
+			swprintf(text, sizeof(text), L"%d:%d", (int)elapsed / 60, (int)elapsed % 60);
 
 			currentTrackLength.SetText(text);
 		}
@@ -156,15 +160,17 @@ inline void MainWindow::AddControls()
 	musicPanel.RegisterControl(&trackTimeSlider);
 
 	currentTrackLength.SetText(L"00:00");
-	currentTrackLength.SetPosAndSize(-350, 70, 200, 50);
+	currentTrackLength.SetPosAndSize(-305, 70, 200, 50);
 	currentTrackLength.EnableDynamicResizing();
 	currentTrackLength.SetAnchorX(Controls::ANCHOR_MIDDLE);
 	currentTrackLength.SetColor(Color(255, 255, 255));
+	currentTrackLength.SetTextAlign(TextAlign::TextAlign_Right);
+	currentTrackLength.SetPosPivot(PIVOT_RIGHT_TOP);
 
 	musicPanel.RegisterControl(&currentTrackLength);
 
 	totalTrackLength.SetText(L"00:00");
-	totalTrackLength.SetPosAndSize(350, 70, 200, 50);
+	totalTrackLength.SetPosAndSize(305, 70, 200, 50);
 	totalTrackLength.EnableDynamicResizing();
 	totalTrackLength.SetAnchorX(Controls::ANCHOR_MIDDLE);
 	totalTrackLength.SetColor(Color(255, 255, 255));
@@ -172,6 +178,7 @@ inline void MainWindow::AddControls()
 	musicPanel.RegisterControl(&totalTrackLength);
 
 	songTitle.SetPosAndSize(10, 20, 800, 50);
+	songTitle.SetWidthPercent(40);
 	songTitle.EnableDynamicResizing();
 	songTitle.SetFontSize(18);
 	songTitle.SetText(L"IDK");
@@ -179,6 +186,8 @@ inline void MainWindow::AddControls()
 	songTitle.SetColor(Color(255, 255, 255));
 
 	musicPanel.RegisterControl(&songTitle);
+
+	
 
 	LPWSTR* szArglist;
 	int nArgs;
@@ -198,6 +207,39 @@ inline void MainWindow::AddControls()
 			});
 		}
 	}
+}
+
+void MainWindow::PlayPause()
+{
+	switch (musicHandler.GetActiveState())
+	{
+		case Music::MusicHandler::ActiveType::Active_Stopped:
+			musicHandler.StartPlayback(musicHandler.currentIndex, [&]() {
+				trackTimeSlider.SetMaxValue(musicHandler.CurrentLength());
+			});
+			break;
+		case Music::MusicHandler::Active_Paused:
+			musicHandler.Play();
+			playBtn.Redraw();
+			break;
+		case Music::MusicHandler::Active_Playing:
+			musicHandler.Pause();
+			playBtn.Redraw();
+			break;
+		case Music::MusicHandler::Active_Paused_Device:
+			MessageBox(hWnd, L"Device paused!", L"Failure", MB_ICONINFORMATION);
+			break;
+		case Music::MusicHandler::Active_Paused_Stalled:
+			MessageBox(hWnd, L"Insufficient data. Playback will automatically resume once there is sufficent data!", L"Failure", MB_ICONERROR);
+			break;
+	}
+}
+
+void MainWindow::Next()
+{
+	musicHandler.StartPlayback(musicHandler.GetNext(), [&]() {
+		trackTimeSlider.SetMaxValue(musicHandler.CurrentLength());
+	});
 }
 
 LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -221,7 +263,44 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 			FillRect(hdc, &ps.rcPaint, brush);
 			EndPaint(hWnd, &ps);
 
+			DeleteObject(brush);
+
 			break;
+		}
+
+		case WM_KEYDOWN:
+		{
+			switch (wParam)
+			{
+				case VK_SPACE:
+					PlayPause();
+					break;
+				case VK_F1:
+				{
+					//currentTrackLength.Redraw();
+
+					double elapsed = musicHandler.Elapsed();
+
+					//if (elapsed == musicHandler.CurrentLength()) MessageBox(hWnd, L"HAHAHA", L"END", MB_ICONINFORMATION);
+
+					trackTimeSlider.SetValue(elapsed);
+
+					wchar_t text[64];
+
+					swprintf(text, sizeof(text), L"Track: %u - %02u:%02u", musicHandler.currentIndex, (int)elapsed / 60, (int)elapsed % 60);
+
+					std::wcout << "RESULT IS: " << text;
+					std::cout << std::endl;
+
+					currentTrackLength.SetText(text);
+
+					std::cout << "STATE: " << musicHandler.GetActiveState() << std::endl;
+
+					break;
+				}
+			}
+
+			return TRUE;
 		}
 
 		case WM_DROPFILES:
@@ -279,17 +358,37 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_TIMER:
 		{
-			if (!musicHandler.IsPaused())
+			switch (musicHandler.GetActiveState())
 			{
-				double elapsed = musicHandler.Elapsed();
+				case Music::MusicHandler::Active_Stopped:
+					if (musicHandler.playNext && musicHandler.Elapsed() == musicHandler.CurrentLength())
+					{
+						musicHandler.playNext = false;
+						if(musicHandler.queue.Size() - 1 != musicHandler.currentIndex)
+							Next();
+					}
+					break;
+				case Music::MusicHandler::Active_Playing:
+				{
+					double elapsed = musicHandler.Elapsed();
 
-				trackTimeSlider.SetValue(elapsed);
+					////if (elapsed == musicHandler.CurrentLength()) MessageBox(hWnd, L"HAHAHA", L"END", MB_ICONINFORMATION);
 
-				wchar_t text[64];
+					trackTimeSlider.SetValue(elapsed);
 
-				swprintf(text, sizeof(text), L"%u:%02u", (int)elapsed / 60, (int)elapsed % 60);
+					wchar_t text[64];
 
-				currentTrackLength.SetText(text);
+					swprintf(text, sizeof(text), L"Track: %u - %02u:%02u", musicHandler.currentIndex, (int)elapsed / 60, (int)elapsed % 60);
+
+					//std::wcout << "RESULT IS: " << text;
+					//std::cout << std::endl;
+
+					currentTrackLength.SetText(text);
+
+					//std::cout << "STATE: " << musicHandler.GetActiveState() << std::endl;
+
+					break;
+				}
 			}
 
 			break;

@@ -108,6 +108,9 @@ namespace Controls {
 		if(m_mouseInside) DrawHandle(fillerLength, &graphics);
 
 		BitBlt(hdc, 0, 0, rect.Width, rect.Height, hdcBuffer, 0, 0, SRCCOPY);
+
+		DeleteDC(hdcBuffer);
+		DeleteObject(hBmp);
 	}
 
 	LRESULT Slider::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -240,7 +243,7 @@ namespace Controls {
 		GetNewSize(parentSize, size);
 
 		hWnd = CreateWindowEx(
-			WS_EX_LAYERED, ClassName(), m_text, WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS,
+			WS_EX_LAYERED, ClassName(), 0, WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS,
 			size.left, size.top, size.right, size.bottom,
 			m_parent, 0, (HINSTANCE)GetWindowLongPtr(m_parent, GWLP_HINSTANCE),
 			this

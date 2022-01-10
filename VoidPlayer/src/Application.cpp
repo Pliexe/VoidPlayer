@@ -19,13 +19,6 @@ Music::MusicHandler musicHandler;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-#ifdef _DEBUG :: Attach Debug Console
-	AllocConsole();
-
-	SetConsoleTitle(L"Debug Console");
-
-	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
-#endif
 
 	HANDLE hMutex = CreateMutex(NULL, TRUE, L"VoidPlayerMutex");
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
@@ -34,6 +27,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 		if (IsWindow(hWnd))
 		{
+			//MainWindow* pThis = (MainWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+			//pThis->Test();
+
 			LPWSTR* szArglist;
 			int nArgs;
 			szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
@@ -43,18 +40,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			if (nArgs > 1) {
 				COPYDATASTRUCT cds;
 				cds.dwData = CD_COMMAND_LINE;
-				cds.cbData = ;
+				cds.cbData = sizeof(szArglist);
 				cds.lpData = szArglist;
 				SendMessage(hWnd, WM_COPYDATA, NULL, (LPARAM)&cds);
 			}
-
-			
 		}
 
 		return FALSE;
 	}
 
+#ifdef _DEBUG :: Attach Debug Console
+	AllocConsole();
 
+	SetConsoleTitle(L"Debug Console");
+
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+#endif
 
 	musicHandler.Init();
 

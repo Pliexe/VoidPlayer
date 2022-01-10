@@ -23,11 +23,11 @@ namespace Controls {
 	{ 
 
 		if (m_wPercent > 0)
-			newSize.right = (long)m_wPercent * parentNewSize.right;
+			newSize.right = m_wPercent * (float)parentNewSize.right;
 		else newSize.right = m_width;
 
 		if (m_hPercent > 0)
-			newSize.bottom = (long)m_hPercent * parentNewSize.bottom;
+			newSize.bottom = m_hPercent * (float)parentNewSize.bottom;
 		else newSize.bottom = m_height;
 
 		switch (m_xAnchor)
@@ -101,7 +101,26 @@ namespace Controls {
 				newSize.top -= newSize.bottom / 2;
 				break;
 		}
-	}	
+	}
+	void Control::GetTextPosition(RectF stringLenth, PointF& position)
+	{
+		switch (m_textAlign)
+		{
+			case TextAlign::TextAlign_Middle:
+				position.X = m_width / 2;
+				position.Y = 0;
+				break;
+			case TextAlign::TextAlign_Right:
+				position.X = m_width - stringLenth.Width - 1;
+				position.Y = 0;
+				break;
+			default:
+				position.X = 0;
+				position.Y = 0;
+				break;
+		}
+	}
+
 
 	std::function<void(WNDCLASS&, HINSTANCE, Control*)> Control::DefaultClass()
 	{
@@ -125,7 +144,7 @@ namespace Controls {
 	bool Control::RegisterDefaultWindow(RECT size)
 	{
 		hWnd = CreateWindowEx(
-			0, ClassName(), m_text, WS_VISIBLE | WS_CHILD,
+			0, ClassName(), 0, WS_VISIBLE | WS_CHILD,
 			size.left, size.top, size.right, size.bottom,
 			m_parent, 0, (HINSTANCE)GetWindowLongPtr(m_parent, GWLP_HINSTANCE),
 			this
@@ -141,6 +160,8 @@ namespace Controls {
 		GetNewSize(parentNewSize, newSize);
 
 		SetWindowPos(hWnd, NULL, newSize.left, newSize.top, newSize.right, newSize.bottom, SWP_NOZORDER);
+
+		Redraw();
 	}
 
 	LRESULT Control::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -200,6 +221,14 @@ namespace Controls {
 					}
 					else return pThis->HandleMessage(uMsg, wParam, lParam);
 					return TRUE;
+				case WM_KEYDOWN:
+				{
+					MessageBox(hWnd, L"Key is down", L"hahah title", MB_ICONINFORMATION);
+					if (wParam == VK_TAB)
+						pThis->Redraw();
+
+					break;
+				}
 				case WM_SIZE:
 				{
 					if (pThis->dynamicResizing) {
@@ -221,6 +250,8 @@ namespace Controls {
 					pThis->OnPaint(hdc, ps.rcPaint);
 
 					EndPaint(hWnd, &ps);
+
+					ReleaseDC(hWnd, hdc);
 
 					return TRUE;
 				}
@@ -267,7 +298,7 @@ namespace Controls {
 					PAINTSTRUCT ps;
 					HDC hdc = BeginPaint(hWnd, &ps);
 
-					pThis->OnPaint(hdc, ps.rcPaint);
+					//pThis->OnPaint(hdc, ps.rcPaint);
 
 					EndPaint(hWnd, &ps);
 
@@ -278,7 +309,7 @@ namespace Controls {
 					PAINTSTRUCT ps;
 					HDC hdc = BeginPaint(hWnd, &ps);
 
-					pThis->OnPaint(hdc, ps.rcPaint);
+					//pThis->OnPaint(hdc, ps.rcPaint);
 
 					EndPaint(hWnd, &ps);
 

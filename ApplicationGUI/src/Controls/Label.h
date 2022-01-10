@@ -23,6 +23,8 @@ namespace Controls {
 
 		int m_tX = 0;
 		int m_tY = 0;
+
+		std::wstring m_text = L"Undefined";
 	public:
 		LRESULT HandleMessage(UINT umsg, WPARAM wParam, LPARAM lParam) { return DefWindowProc(hWnd, umsg, wParam, lParam); }
 		void OnPaint(HDC& hdc, RECT& toRepaint);
@@ -48,18 +50,8 @@ namespace Controls {
 
 		void SetText(LPCWSTR text)
 		{
-			if(hWnd == NULL)
-				m_text = text;
-			else {
-				/*if (lstrcmp(m_text, text) != 0)
-				{
-					m_text = text;
-					Redraw();
-				}*/
-
-				m_text = text;
-				Redraw();
-			}
+			m_text = std::wstring(text);
+			if (hWnd != NULL) Redraw();
 		}
 	};
 }

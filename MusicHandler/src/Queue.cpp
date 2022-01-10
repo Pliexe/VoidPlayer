@@ -28,6 +28,11 @@ namespace Music {
 		tracks.erase(tracks.begin() + index);
 	}
 
+	Track Queue::Get(int index)
+	{
+		return tracks[index];
+	}
+
 	Track Queue::Pop(int i)
 	{
 		Track temp = tracks[i];
